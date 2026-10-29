@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/server/">
+    <Project Path="server/SmartCv.Api.csproj" />
+  </Folder>
+</Solution>

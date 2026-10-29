@@ -1,0 +1,20 @@
+.home-page {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 24px;
+
+    &-cv {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    &-cv-name {
+        font-weight: 600;
+    }
+
+    &-cv-description {
+        color: #666;
+    }
+}

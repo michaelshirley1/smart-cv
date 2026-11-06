@@ -1,0 +1,11 @@
+@use 'reset';
+@use 'tokens' as *;
+
+body {
+    background: $colour-background;
+    color: $colour-text;
+    font-family: $font-ui;
+    font-size: $font-size-base;
+    font-weight: $font-weight-regular;
+    -webkit-font-smoothing: antialiased;
+}

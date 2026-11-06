@@ -1,31 +1,30 @@
-using SmartCv.Api.Repositories;
+using SmartCv.Host;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace SmartCv;
 
-var corsOrigins = (Environment.GetEnvironmentVariable("CORS_ORIGINS") ?? "http://localhost:5173")
-    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-builder.Services.AddCors(options =>
+public static class Program
 {
-    options.AddDefaultPolicy(policy =>
-        policy.WithOrigins(corsOrigins)
-              .AllowAnyMethod()
-              .AllowAnyHeader());
-});
+    [STAThread]
+    public static void Main(string[] args)
+    {
+        var options = AppOptions.FromArgs(args);
+        var paths = AppPaths.ForCurrentUser();
+        paths.EnsureCreated();
+        var app = ServerSetup.Build(args, options, paths);
 
-builder.Services.AddControllers();
-builder.Services.AddOpenApi();
-builder.Services.AddSingleton<IResumeRepository, ResumeRepository>();
+        AppInitialiser.Run(app.Services);
 
-var app = builder.Build();
+        if (options.Mode == AppMode.Headless)
+        {
+            app.Run();
+            return;
+        }
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
+        app.StartAsync().GetAwaiter().GetResult();
+
+        var url = options.Mode == AppMode.Dev ? AppOptions.DevClientUrl : app.Urls.First();
+        AppWindow.Show(url);
+
+        app.StopAsync().GetAwaiter().GetResult();
+    }
 }
-
-app.UseCors();
-app.UseAuthorization();
-app.MapControllers();
-
-app.Run();

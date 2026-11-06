@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/server/">
-    <Project Path="server/SmartCv.Api.csproj" />
+    <Project Path="server/SmartCv.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SmartCv.Tests/SmartCv.Tests.csproj" />
   </Folder>
 </Solution>

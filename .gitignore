@@ -1,7 +1,15 @@
 node_modules/
 dist/
+publish/
 server/bin/
 server/obj/
+server/wwwroot/
+tests/**/bin/
+tests/**/obj/
 *.user
 .vs/
+.vscode/
+.idea/
+.claude/
 *.log
+PLAN.md

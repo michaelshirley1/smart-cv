@@ -1,0 +1,33 @@
+.cv-wrapper {
+    --cv-page-width: 8.5in;
+    --cv-page-height: 11in;
+    --cv-page-margin-top: 0.44in;
+    --cv-page-margin-right: 0.5in;
+    --cv-page-margin-bottom: 0.29in;
+    --cv-page-margin-left: 0.5in;
+    --cv-body-font: "Garamond", "EB Garamond", "Cormorant Garamond", serif;
+    --cv-heading-font: "Garamond", "EB Garamond", "Cormorant Garamond", serif;
+    --cv-font-size: 11pt;
+    --cv-line-height: 1.05;
+    --cv-text-colour: #000000;
+    --cv-muted-colour: #000000;
+    --cv-accent-colour: #000000;
+    --cv-link-colour: #1155cc;
+    --cv-link-decoration: underline;
+    --cv-name-size: 24pt;
+    --cv-name-weight: 700;
+    --cv-name-align: center;
+    --cv-contact-size: 11pt;
+    --cv-contact-separator: "\2756";
+    --cv-header-rule: 0.75pt solid #000000;
+    --cv-heading-size: 11pt;
+    --cv-heading-weight: 700;
+    --cv-heading-case: uppercase;
+    --cv-heading-rule: 0.75pt solid #000000;
+    --cv-section-spacing: 5pt;
+    --cv-entry-spacing: 6pt;
+    --cv-entry-heading-weight: 700;
+    --cv-entry-subheading-style: normal;
+    --cv-bullet: "\25AA";
+    --cv-bullet-indent: 0.25in;
+}

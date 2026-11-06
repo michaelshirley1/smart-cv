@@ -1,0 +1,33 @@
+.cv-wrapper {
+    --cv-page-width: 210mm;
+    --cv-page-height: 297mm;
+    --cv-page-margin-top: 16mm;
+    --cv-page-margin-right: 16mm;
+    --cv-page-margin-bottom: 14mm;
+    --cv-page-margin-left: 16mm;
+    --cv-body-font: "Helvetica Neue", "Arial", sans-serif;
+    --cv-heading-font: "Helvetica Neue", "Arial", sans-serif;
+    --cv-font-size: 10pt;
+    --cv-line-height: 1.4;
+    --cv-text-colour: #222222;
+    --cv-muted-colour: #6a6a6a;
+    --cv-accent-colour: #2a6f6f;
+    --cv-link-colour: #2a6f6f;
+    --cv-link-decoration: none;
+    --cv-name-size: 22pt;
+    --cv-name-weight: 600;
+    --cv-name-align: left;
+    --cv-contact-size: 9.5pt;
+    --cv-contact-separator: "\00B7";
+    --cv-header-rule: none;
+    --cv-heading-size: 11pt;
+    --cv-heading-weight: 600;
+    --cv-heading-case: none;
+    --cv-heading-rule: 1pt solid #2a6f6f;
+    --cv-section-spacing: 12pt;
+    --cv-entry-spacing: 8pt;
+    --cv-entry-heading-weight: 600;
+    --cv-entry-subheading-style: normal;
+    --cv-bullet: "\2013";
+    --cv-bullet-indent: 5mm;
+}

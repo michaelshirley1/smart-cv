@@ -1,0 +1,33 @@
+.cv-wrapper {
+    --cv-page-width: 210mm;
+    --cv-page-height: 297mm;
+    --cv-page-margin-top: 11mm;
+    --cv-page-margin-right: 12mm;
+    --cv-page-margin-bottom: 10mm;
+    --cv-page-margin-left: 12mm;
+    --cv-body-font: "Calibri", "Carlito", "Arial", sans-serif;
+    --cv-heading-font: "Calibri", "Carlito", "Arial", sans-serif;
+    --cv-font-size: 9.5pt;
+    --cv-line-height: 1.25;
+    --cv-text-colour: #1a1a1a;
+    --cv-muted-colour: #555555;
+    --cv-accent-colour: #1a1a1a;
+    --cv-link-colour: #1a1a1a;
+    --cv-link-decoration: underline;
+    --cv-name-size: 18pt;
+    --cv-name-weight: 700;
+    --cv-name-align: left;
+    --cv-contact-size: 9pt;
+    --cv-contact-separator: "|";
+    --cv-header-rule: 0.5pt solid #1a1a1a;
+    --cv-heading-size: 10pt;
+    --cv-heading-weight: 700;
+    --cv-heading-case: uppercase;
+    --cv-heading-rule: 0.5pt solid #1a1a1a;
+    --cv-section-spacing: 7pt;
+    --cv-entry-spacing: 5pt;
+    --cv-entry-heading-weight: 700;
+    --cv-entry-subheading-style: italic;
+    --cv-bullet: "\2022";
+    --cv-bullet-indent: 4mm;
+}

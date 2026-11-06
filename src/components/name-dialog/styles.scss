@@ -1,6 +1,6 @@
-@use '../../../../../styles/tokens' as *;
+@use '../../styles/tokens' as *;
 
-.profile-dialog {
+.name-dialog {
     display: flex;
     flex-direction: column;
     gap: $space-4;

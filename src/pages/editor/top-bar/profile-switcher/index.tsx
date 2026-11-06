@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ProfileDialogKind, ProfileSwitcherProps } from './model';
 import { useProfileContext } from '../../profile-context';
-import ProfileDialog from './profile-dialog';
 import Icon from '../../../../components/icon';
 import Button from '../../../../components/button';
 import Modal from '../../../../components/modal';
+import NameDialog from '../../../../components/name-dialog';
 
 import './styles.scss';
 
@@ -81,11 +81,11 @@ const ProfileSwitcher: React.FC<ProfileSwitcherProps> = () => {
             )}
 
             {dialog === 'create' && (
-                <ProfileDialog title="New profile" confirmLabel="Create" initialName="" onSubmit={createProfile} onClose={closeDialog} />
+                <NameDialog title="New profile" label="Profile name" placeholder="e.g. Backend roles" confirmLabel="Create" initialName="" onSubmit={createProfile} onClose={closeDialog} />
             )}
 
             {dialog === 'rename' && profile && (
-                <ProfileDialog title="Rename profile" confirmLabel="Save" initialName={profile.name} onSubmit={renameProfile} onClose={closeDialog} />
+                <NameDialog title="Rename profile" label="Profile name" confirmLabel="Save" initialName={profile.name} onSubmit={renameProfile} onClose={closeDialog} />
             )}
 
             {dialog === 'delete' && profile && (

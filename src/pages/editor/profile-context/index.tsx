@@ -20,6 +20,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     const [settings, setSettings] = useState<AppSettings | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [templateRevision, setTemplateRevision] = useState(0);
     const started = useRef(false);
 
     const run = async (action: () => Promise<void>, fallback: string) => {
@@ -107,6 +108,12 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
             }, fallback);
             return updated;
         },
+        attempt: run,
+        reloadProfile: async () => {
+            if (profile) await selectProfile(profile.id);
+        },
+        templateRevision,
+        refreshTemplate: () => setTemplateRevision(current => current + 1),
     };
 
     return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

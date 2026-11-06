@@ -9,14 +9,15 @@ import CvWrapper from '../cv-wrapper';
 import './styles.scss';
 
 const CvCanvas: React.FC<CvCanvasProps> = () => {
-    const { profile, mutate } = useProfileContext();
-    const [loadedTemplate, setLoadedTemplate] = useState<string | null>(null);
+    const { profile, mutate, templateRevision } = useProfileContext();
+    const [loadedHref, setLoadedHref] = useState<string | null>(null);
     const canvas = useRef<HTMLDivElement>(null);
     const probe = useRef<HTMLDivElement>(null);
     const zoom = useFitZoom(canvas, probe);
 
-    const templateName = profile?.templateName;
-    const ready = profile !== null && loadedTemplate === templateName;
+    const href = profile ? `/templates/${profile.templateName}.css?v=${templateRevision}` : null;
+    const ready = profile !== null && loadedHref !== null;
+    const stylesheets = [...new Set([loadedHref, href])].filter((value): value is string => value !== null);
 
     const edits: CvEdits | undefined = profile ? {
         saveProfile: request => mutate(() => api.updateProfile(profile.id, request), 'Could not save your details.'),
@@ -27,14 +28,15 @@ const CvCanvas: React.FC<CvCanvasProps> = () => {
 
     return (
         <div className="cv-canvas" ref={canvas}>
-            {templateName && (
+            {stylesheets.map(stylesheet => (
                 <link
+                    key={stylesheet}
                     rel="stylesheet"
-                    href={`/templates/${templateName}.css`}
-                    onLoad={() => setLoadedTemplate(templateName)}
-                    onError={() => setLoadedTemplate(templateName)}
+                    href={stylesheet}
+                    onLoad={() => stylesheet === href && setLoadedHref(stylesheet)}
+                    onError={() => stylesheet === href && setLoadedHref(stylesheet)}
                 />
-            )}
+            ))}
             <div className="cv-wrapper cv-canvas-probe" ref={probe} aria-hidden="true" />
             <div className={`cv-canvas-scaler cv-canvas-scaler--zoom-${zoom}${ready ? '' : ' cv-canvas-scaler--loading'}`}>
                 {profile && <CvWrapper profile={profile} variant="editor" showPlaceholders edits={edits} />}

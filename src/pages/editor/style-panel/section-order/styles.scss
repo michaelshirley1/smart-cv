@@ -1,0 +1,45 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.section-order {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+    list-style: none;
+
+    &-empty {
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+    }
+
+    &-item {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: $space-2;
+        padding: 2px $space-1 2px $space-2;
+        border: $border;
+        border-radius: $radius;
+
+        &--hidden .section-order-title {
+            color: $colour-text-muted;
+            text-decoration: line-through;
+        }
+
+        &--drop-before {
+            @include drop-indicator(before);
+        }
+
+        &--drop-after {
+            @include drop-indicator(after);
+        }
+    }
+
+    &-title {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}

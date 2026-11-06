@@ -1,0 +1,83 @@
+@use '../../../../styles/tokens' as *;
+
+.template-picker {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+
+    &-list {
+        display: flex;
+        flex-direction: column;
+        gap: $space-1;
+        list-style: none;
+    }
+
+    &-option {
+        display: flex;
+        align-items: center;
+        gap: $space-2;
+        width: 100%;
+        height: $control-height;
+        padding: 0 $space-3;
+        border: $border;
+        border-radius: $radius;
+        background: $colour-background;
+        text-align: left;
+        cursor: pointer;
+
+        &:hover {
+            background: $colour-hover;
+        }
+
+        &:focus-visible {
+            outline: $focus-ring;
+            outline-offset: 1px;
+        }
+
+        &--active {
+            border-color: $colour-accent;
+            font-weight: $font-weight-strong;
+        }
+    }
+
+    &-name {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &-badge {
+        color: $colour-text-muted;
+        font-size: 0.75rem;
+        font-weight: $font-weight-regular;
+    }
+
+    &-hint,
+    &-notice {
+        font-size: $font-size-small;
+        line-height: 1.45;
+    }
+
+    &-hint {
+        color: $colour-text-muted;
+    }
+
+    &-notice {
+        padding: $space-2;
+        border: $border;
+        border-radius: $radius;
+        background: $colour-surface;
+    }
+
+    &-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $space-2;
+    }
+
+    &-delete {
+        color: $colour-danger;
+    }
+}

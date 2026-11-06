@@ -23,7 +23,7 @@
     --cv-heading-size: 11pt;
     --cv-heading-weight: 600;
     --cv-heading-case: none;
-    --cv-heading-rule: 1pt solid #2a6f6f;
+    --cv-heading-rule: 1pt solid currentColor;
     --cv-summary-title-display: block;
     --cv-section-spacing: 12pt;
     --cv-entry-spacing: 8pt;

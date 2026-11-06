@@ -1,0 +1,47 @@
+@use '../../styles/tokens' as *;
+
+.number-field {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+    min-width: 0;
+
+    &-label {
+        overflow: hidden;
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &-control {
+        display: flex;
+        align-items: center;
+        height: $control-height;
+        border: $border-strong;
+        border-radius: $radius;
+        background: $colour-background;
+
+        &:focus-within {
+            outline: $focus-ring;
+            outline-offset: -1px;
+        }
+    }
+
+    &-input {
+        flex: 1;
+        width: 100%;
+        min-width: 0;
+        height: 100%;
+        padding: 0 $space-2;
+        border: 0;
+        background: transparent;
+        outline: none;
+    }
+
+    &-unit {
+        padding-right: $space-2;
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+    }
+}

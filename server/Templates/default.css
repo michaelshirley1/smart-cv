@@ -19,11 +19,11 @@
     --cv-name-align: center;
     --cv-contact-size: 11pt;
     --cv-contact-separator: "\2756";
-    --cv-header-rule: 0.75pt solid #000000;
+    --cv-header-rule: 0.75pt solid currentColor;
     --cv-heading-size: 11pt;
     --cv-heading-weight: 700;
     --cv-heading-case: uppercase;
-    --cv-heading-rule: 0.75pt solid #000000;
+    --cv-heading-rule: 0.75pt solid currentColor;
     --cv-summary-title-display: none;
     --cv-section-spacing: 5pt;
     --cv-entry-spacing: 6pt;

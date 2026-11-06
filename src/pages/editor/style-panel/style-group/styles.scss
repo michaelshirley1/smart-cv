@@ -1,0 +1,11 @@
+@use '../../../../styles/tokens' as *;
+
+.style-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+    gap: $space-3 $space-2;
+
+    &-control--font {
+        grid-column: 1 / -1;
+    }
+}

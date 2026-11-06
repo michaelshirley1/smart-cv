@@ -3,20 +3,17 @@
 .style-panel {
     display: flex;
     flex-direction: column;
-    gap: $space-4;
+    margin-top: -$space-4;
 
-    &-summary {
+    &-grid {
         display: grid;
-        grid-template-columns: auto 1fr;
-        gap: $space-2 $space-4;
-        margin: 0;
+        grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+        gap: $space-3 $space-2;
     }
 
-    &-summary-label {
+    &-loading {
+        padding: $space-4 0;
         color: $colour-text-muted;
-    }
-
-    &-summary-value {
-        margin: 0;
+        font-size: $font-size-small;
     }
 }

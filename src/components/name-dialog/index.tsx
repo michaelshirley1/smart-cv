@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { ProfileDialogProps } from './model';
-import Modal from '../../../../../components/modal';
-import TextField from '../../../../../components/text-field';
-import Button from '../../../../../components/button';
+import { NameDialogProps } from './model';
+import Modal from '../modal';
+import TextField from '../text-field';
+import Button from '../button';
 
 import './styles.scss';
 
-const maxNameLength = 100;
-
-const ProfileDialog: React.FC<ProfileDialogProps> = ({ title, confirmLabel, initialName, onSubmit, onClose }) => {
+const NameDialog: React.FC<NameDialogProps> = ({ title, label, confirmLabel, initialName, placeholder, maxLength = 100, onSubmit, onClose }) => {
     const [name, setName] = useState(initialName);
     const [saving, setSaving] = useState(false);
     const trimmed = name.trim();
@@ -23,16 +21,16 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({ title, confirmLabel, init
 
     return (
         <Modal title={title} onClose={onClose}>
-            <form className="profile-dialog" onSubmit={handleSubmit}>
+            <form className="name-dialog" onSubmit={handleSubmit}>
                 <TextField
-                    label="Profile name"
+                    label={label}
                     value={name}
                     onChange={setName}
-                    maxLength={maxNameLength}
-                    placeholder="e.g. Backend roles"
+                    maxLength={maxLength}
+                    placeholder={placeholder}
                     autoFocus
                 />
-                <div className="profile-dialog-actions">
+                <div className="name-dialog-actions">
                     <Button variant="secondary" onClick={onClose}>Cancel</Button>
                     <Button type="submit" disabled={!trimmed || saving}>{confirmLabel}</Button>
                 </div>
@@ -41,4 +39,4 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({ title, confirmLabel, init
     );
 };
 
-export default ProfileDialog;
+export default NameDialog;

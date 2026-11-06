@@ -126,6 +126,22 @@ export interface CreateTagRequest extends TagRequest {
     profileId: number;
 }
 
+export type TemplateValues = Record<string, string>;
+
+export interface TemplateSummary {
+    name: string;
+    isBuiltIn: boolean;
+}
+
+export interface Template extends TemplateSummary {
+    values: TemplateValues;
+}
+
+export interface TemplateRequest {
+    name: string;
+    values: TemplateValues;
+}
+
 export interface AppSettings {
     matchingMode: MatchingMode;
     ollamaUrl: string;

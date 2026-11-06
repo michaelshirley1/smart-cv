@@ -16,6 +16,9 @@ import {
     SectionRequest,
     Tag,
     TagRequest,
+    Template,
+    TemplateRequest,
+    TemplateSummary,
 } from './model';
 
 export const getProfiles = () =>
@@ -86,6 +89,24 @@ export const updateTag = (id: number, request: TagRequest) =>
 
 export const deleteTag = (id: number) =>
     client.delete<ProfileDetail>(`/tag/${id}`).then(r => r.data);
+
+export const getTemplates = () =>
+    client.get<TemplateSummary[]>('/template').then(r => r.data);
+
+export const getTemplate = (name: string) =>
+    client.get<Template>(`/template/${encodeURIComponent(name)}`).then(r => r.data);
+
+export const createTemplate = (request: TemplateRequest) =>
+    client.post<Template>('/template', request).then(r => r.data);
+
+export const updateTemplate = (name: string, request: TemplateRequest) =>
+    client.put<Template>(`/template/${encodeURIComponent(name)}`, request).then(r => r.data);
+
+export const deleteTemplate = (name: string) =>
+    client.delete(`/template/${encodeURIComponent(name)}`);
+
+export const getFonts = () =>
+    client.get<string[]>('/font').then(r => r.data);
 
 export const getSettings = () =>
     client.get<AppSettings>('/settings').then(r => r.data);

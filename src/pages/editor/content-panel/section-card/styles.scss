@@ -1,0 +1,129 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.section-card {
+    border: $border;
+    border-radius: $radius;
+    background: $colour-background;
+
+    &--hidden &-title,
+    &--hidden &-count {
+        color: $colour-text-muted;
+        text-decoration: line-through;
+    }
+
+    &-header {
+        display: flex;
+        align-items: center;
+        gap: $space-1;
+        min-height: $control-height + $space-1;
+        padding: 0 $space-1 0 $space-1;
+    }
+
+    &-toggle {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        width: $control-height-small;
+        height: $control-height-small;
+        padding: 0;
+        border: 0;
+        border-radius: $radius;
+        background: transparent;
+        color: $colour-text-muted;
+        cursor: pointer;
+
+        .icon {
+            transition: transform $panel-transition;
+        }
+
+        &--expanded .icon {
+            transform: rotate(90deg);
+        }
+
+        &:hover {
+            background: $colour-hover;
+        }
+
+        &:focus-visible {
+            outline: $focus-ring;
+        }
+    }
+
+    &-title {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        font-weight: $font-weight-strong;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &-count {
+        flex-shrink: 0;
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+        white-space: nowrap;
+    }
+
+    &-actions {
+        display: flex;
+        flex-shrink: 0;
+    }
+
+    &-body {
+        display: flex;
+        flex-direction: column;
+        gap: $space-3;
+        padding: $space-2 $space-3 $space-3;
+        border-top: $border;
+    }
+
+    &-settings {
+        display: flex;
+        gap: $space-2;
+    }
+
+    &-kind {
+        flex: 1;
+    }
+
+    &-max-lines {
+        flex: 0 0 88px;
+    }
+
+    &-tags {
+        display: flex;
+        flex-direction: column;
+        gap: $space-1;
+    }
+
+    &-tags-label {
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+    }
+
+    &-entries {
+        display: flex;
+        flex-direction: column;
+        gap: $space-3;
+        list-style: none;
+    }
+
+    &-entry {
+        position: relative;
+
+        &--drop-before {
+            @include drop-indicator(before);
+        }
+
+        &--drop-after {
+            @include drop-indicator(after);
+        }
+    }
+
+    &-add-entry {
+        align-self: flex-start;
+    }
+}

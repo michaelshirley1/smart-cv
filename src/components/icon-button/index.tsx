@@ -4,10 +4,11 @@ import Icon from '../icon';
 
 import './styles.scss';
 
-const IconButton: React.FC<IconButtonProps> = ({ icon, label, className, type = 'button', ...rest }) => (
+const IconButton: React.FC<IconButtonProps> = ({ icon, label, active, className, type = 'button', ...rest }) => (
     <button
         type={type}
-        className={`icon-button${className ? ` ${className}` : ''}`}
+        className={`icon-button${active ? ' icon-button--active' : ''}${className ? ` ${className}` : ''}`}
+        aria-pressed={active}
         aria-label={label}
         title={label}
         {...rest}

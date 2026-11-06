@@ -1,0 +1,49 @@
+@use 'sass:list';
+@use '../../styles/tokens' as *;
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    max-width: 100%;
+    height: 20px;
+    padding: 0 $space-2;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    line-height: 1;
+
+    &-label {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &-remove {
+        display: inline-flex;
+        margin-right: -$space-1;
+        padding: 1px;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+
+        .icon {
+            width: 12px;
+            height: 12px;
+        }
+
+        &:hover,
+        &:focus-visible {
+            background: rgba(0, 0, 0, 0.08);
+            outline: none;
+        }
+    }
+
+    @each $name, $colours in $tag-colours {
+        &--#{$name} {
+            background: list.nth($colours, 1);
+            color: list.nth($colours, 2);
+        }
+    }
+}

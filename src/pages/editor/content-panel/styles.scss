@@ -3,22 +3,5 @@
 .content-panel {
     display: flex;
     flex-direction: column;
-    gap: $space-3;
-
-    &-empty {
-        color: $colour-text-muted;
-    }
-
-    &-sections {
-        display: flex;
-        flex-direction: column;
-        gap: $space-1;
-        list-style: none;
-    }
-
-    &-section {
-        padding: $space-2 $space-3;
-        border: $border;
-        border-radius: $radius;
-    }
+    margin-top: -$space-4;
 }

@@ -1,24 +1,21 @@
 import React from 'react';
 import { ContentPanelProps } from './model';
 import { useProfileContext } from '../profile-context';
+import ProfileDetails from './profile-details';
+import SectionList from './section-list';
+import TagManager from './tag-manager';
 
 import './styles.scss';
 
 const ContentPanel: React.FC<ContentPanelProps> = () => {
     const { profile } = useProfileContext();
-    const sections = profile?.sections ?? [];
+    if (!profile) return null;
 
     return (
         <div className="content-panel">
-            {sections.length === 0 ? (
-                <p className="content-panel-empty">No sections yet.</p>
-            ) : (
-                <ul className="content-panel-sections">
-                    {sections.map(section => (
-                        <li key={section.id} className="content-panel-section">{section.title}</li>
-                    ))}
-                </ul>
-            )}
+            <ProfileDetails profile={profile} />
+            <SectionList profile={profile} />
+            <TagManager profile={profile} />
         </div>
     );
 };

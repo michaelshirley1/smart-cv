@@ -1,0 +1,72 @@
+@use '../../styles/tokens' as *;
+
+.tag-input {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-1;
+
+    &-search {
+        position: relative;
+        flex: 1;
+        min-width: 80px;
+    }
+
+    &-field {
+        width: 100%;
+        height: $control-height-small;
+        padding: 0 $space-1;
+        border: 1px solid transparent;
+        border-radius: $radius;
+        background: transparent;
+        font-size: $font-size-small;
+
+        &::placeholder {
+            color: $colour-text-muted;
+        }
+
+        &:hover {
+            border-color: $colour-border;
+        }
+
+        &:focus {
+            border-color: $colour-border-strong;
+            background: $colour-background;
+            outline: none;
+        }
+    }
+
+    &-options {
+        position: absolute;
+        top: calc(100% + 2px);
+        left: 0;
+        z-index: $z-menu;
+        width: max-content;
+        min-width: 160px;
+        max-width: 260px;
+        max-height: 220px;
+        overflow-y: auto;
+        padding: $space-1;
+        border: $border-strong;
+        border-radius: $radius;
+        background: $colour-background;
+        list-style: none;
+    }
+
+    &-option {
+        display: flex;
+        align-items: center;
+        min-height: $control-height-small + $space-1;
+        padding: 0 $space-2;
+        border-radius: $radius;
+        cursor: pointer;
+
+        &--highlighted {
+            background: $colour-hover;
+        }
+    }
+
+    &-create {
+        font-size: $font-size-small;
+    }
+}

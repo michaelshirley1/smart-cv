@@ -37,6 +37,7 @@ $border-strong: 1px solid $colour-border-strong;
 $focus-ring: 2px solid $colour-accent;
 
 $control-height: 32px;
+$control-height-small: 24px;
 $icon-size: 16px;
 
 $top-bar-height: 48px;
@@ -47,6 +48,17 @@ $panel-transition-duration: 200ms;
 $panel-transition: $panel-transition-duration ease;
 $panel-hover-delay: 150ms;
 $panel-collapse-delay: 250ms;
+
+$tag-colours: (
+    'default': (#f0f0f0, #4a4a4a),
+    'blue': (#e7f0fb, #1f4f8a),
+    'green': (#e6f4ea, #1e6b34),
+    'amber': (#fdf2dc, #7a5200),
+    'red': (#fbe9e8, #9b2a22),
+    'purple': (#f1eafb, #5b2f91),
+    'teal': (#e3f4f3, #1b625d),
+    'pink': (#fbe8f1, #8e2a5c),
+);
 
 $menu-width: 260px;
 $modal-width: 400px;

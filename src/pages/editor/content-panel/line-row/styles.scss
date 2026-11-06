@@ -1,0 +1,53 @@
+@use '../../../../styles/tokens' as *;
+
+.line-row {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-1;
+    padding: $space-1;
+    border: 1px solid transparent;
+    border-radius: $radius;
+
+    &:hover,
+    &:focus-within {
+        border-color: $colour-border;
+        background: $colour-background;
+    }
+
+    &--always-on {
+        border-left: 2px solid $colour-accent;
+    }
+
+    &--hidden &-text {
+        color: $colour-text-muted;
+        text-decoration: line-through;
+    }
+
+    &-main {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    &-text {
+        display: block;
+        padding: 2px;
+        font-size: $font-size-small;
+        line-height: 1.45;
+    }
+
+    &-actions {
+        display: flex;
+        flex-shrink: 0;
+        opacity: 0;
+    }
+
+    &:hover &-actions,
+    &:focus-within &-actions,
+    &--always-on &-actions,
+    &--hidden &-actions {
+        opacity: 1;
+    }
+}

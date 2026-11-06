@@ -23,6 +23,16 @@
         outline-offset: 1px;
     }
 
+    &--active {
+        color: $colour-text;
+        background: $colour-selected;
+    }
+
+    &--small {
+        width: $control-height-small;
+        height: $control-height-small;
+    }
+
     &:disabled {
         opacity: 0.5;
         cursor: not-allowed;

@@ -1,0 +1,19 @@
+@use '../../../../styles/tokens' as *;
+
+.add-section {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: $space-2;
+    padding: $space-3;
+    border: 1px dashed $colour-border-strong;
+    border-radius: $radius;
+
+    &-title {
+        flex: 1 1 140px;
+    }
+
+    &-kind {
+        flex: 0 1 120px;
+    }
+}

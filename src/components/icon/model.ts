@@ -6,7 +6,14 @@ export type IconName =
     | 'plus'
     | 'close'
     | 'style'
-    | 'content';
+    | 'content'
+    | 'grip'
+    | 'trash'
+    | 'eye'
+    | 'eye-off'
+    | 'pin'
+    | 'chevron-right'
+    | 'tag';
 
 export interface IconProps {
     name: IconName;

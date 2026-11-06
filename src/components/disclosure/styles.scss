@@ -1,0 +1,50 @@
+@use '../../styles/tokens' as *;
+
+.disclosure {
+    border-bottom: $border;
+
+    &-header {
+        display: flex;
+        align-items: center;
+        gap: $space-2;
+        height: $control-height + $space-2;
+        cursor: pointer;
+        list-style: none;
+        user-select: none;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+
+        &:focus-visible {
+            outline: $focus-ring;
+            outline-offset: -2px;
+        }
+    }
+
+    &-chevron {
+        color: $colour-text-muted;
+        transition: transform $panel-transition;
+    }
+
+    &[open] > &-header &-chevron {
+        transform: rotate(90deg);
+    }
+
+    &-title {
+        font-weight: $font-weight-strong;
+    }
+
+    &-summary {
+        margin-left: auto;
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+    }
+
+    &-body {
+        display: flex;
+        flex-direction: column;
+        gap: $space-3;
+        padding-bottom: $space-4;
+    }
+}

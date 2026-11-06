@@ -1,0 +1,27 @@
+@use '../../../../styles/tokens' as *;
+
+.profile-details {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+
+    &-links {
+        display: flex;
+        flex-direction: column;
+        gap: $space-2;
+    }
+
+    &-link {
+        display: flex;
+        align-items: flex-end;
+        gap: $space-1;
+    }
+
+    &-link-field {
+        flex: 1;
+    }
+
+    &-add-link {
+        align-self: flex-start;
+    }
+}

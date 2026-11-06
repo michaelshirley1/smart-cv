@@ -1,0 +1,74 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.entry-card {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+
+    &--with-header {
+        padding: $space-2;
+        border: $border;
+        border-radius: $radius;
+        background: $colour-surface;
+    }
+
+    &-header {
+        display: flex;
+        align-items: flex-start;
+        gap: $space-1;
+        padding-bottom: $space-1;
+    }
+
+    &-fields {
+        display: grid;
+        flex: 1;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 2px $space-2;
+        min-width: 0;
+    }
+
+    &-field {
+        overflow: hidden;
+        padding: 0 2px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        &--heading {
+            font-weight: $font-weight-strong;
+        }
+
+        &--dateRange,
+        &--location {
+            color: $colour-text-muted;
+            font-size: $font-size-small;
+            text-align: right;
+        }
+    }
+
+    &-lines {
+        display: flex;
+        flex-direction: column;
+        gap: $space-1;
+        list-style: none;
+    }
+
+    &-line {
+        position: relative;
+
+        &--drop-before {
+            @include drop-indicator(before);
+        }
+
+        &--drop-after {
+            @include drop-indicator(after);
+        }
+    }
+
+    &-add-line {
+        display: block;
+        margin-left: 20px;
+        padding: 2px $space-1;
+        font-size: $font-size-small;
+    }
+}

@@ -1,5 +1,22 @@
 import client from '../../api/client';
-import { AppSettings, Entry, EntryRequest, Line, LineRequest, Profile, ProfileDetail, ProfileRequest, Section, SectionRequest } from './model';
+import {
+    AppSettings,
+    CreateEntryRequest,
+    CreateLineRequest,
+    CreateSectionRequest,
+    CreateTagRequest,
+    Entry,
+    EntryRequest,
+    Line,
+    LineRequest,
+    Profile,
+    ProfileDetail,
+    ProfileRequest,
+    Section,
+    SectionRequest,
+    Tag,
+    TagRequest,
+} from './model';
 
 export const getProfiles = () =>
     client.get<Profile[]>('/profile').then(r => r.data);
@@ -19,14 +36,56 @@ export const duplicateProfile = (id: number) =>
 export const deleteProfile = (id: number) =>
     client.delete(`/profile/${id}`);
 
+export const createSection = (request: CreateSectionRequest) =>
+    client.post<ProfileDetail>('/section', request).then(r => r.data);
+
 export const updateSection = (id: number, request: SectionRequest) =>
     client.put<ProfileDetail>(`/section/${id}`, request).then(r => r.data);
+
+export const deleteSection = (id: number) =>
+    client.delete<ProfileDetail>(`/section/${id}`).then(r => r.data);
+
+export const reorderSections = (profileId: number, ids: number[]) =>
+    client.put<ProfileDetail>('/section/reorder', { parentId: profileId, ids }).then(r => r.data);
+
+export const setSectionTags = (id: number, tagIds: number[]) =>
+    client.put<ProfileDetail>(`/section/${id}/tags`, { tagIds }).then(r => r.data);
+
+export const createEntry = (request: CreateEntryRequest) =>
+    client.post<ProfileDetail>('/entry', request).then(r => r.data);
 
 export const updateEntry = (id: number, request: EntryRequest) =>
     client.put<ProfileDetail>(`/entry/${id}`, request).then(r => r.data);
 
+export const deleteEntry = (id: number) =>
+    client.delete<ProfileDetail>(`/entry/${id}`).then(r => r.data);
+
+export const reorderEntries = (sectionId: number, ids: number[]) =>
+    client.put<ProfileDetail>('/entry/reorder', { parentId: sectionId, ids }).then(r => r.data);
+
+export const createLine = (request: CreateLineRequest) =>
+    client.post<ProfileDetail>('/line', request).then(r => r.data);
+
 export const updateLine = (id: number, request: LineRequest) =>
     client.put<ProfileDetail>(`/line/${id}`, request).then(r => r.data);
+
+export const deleteLine = (id: number) =>
+    client.delete<ProfileDetail>(`/line/${id}`).then(r => r.data);
+
+export const reorderLines = (entryId: number, ids: number[]) =>
+    client.put<ProfileDetail>('/line/reorder', { parentId: entryId, ids }).then(r => r.data);
+
+export const setLineTags = (id: number, tagIds: number[]) =>
+    client.put<ProfileDetail>(`/line/${id}/tags`, { tagIds }).then(r => r.data);
+
+export const createTag = (request: CreateTagRequest) =>
+    client.post<ProfileDetail>('/tag', request).then(r => r.data);
+
+export const updateTag = (id: number, request: TagRequest) =>
+    client.put<ProfileDetail>(`/tag/${id}`, request).then(r => r.data);
+
+export const deleteTag = (id: number) =>
+    client.delete<ProfileDetail>(`/tag/${id}`).then(r => r.data);
 
 export const getSettings = () =>
     client.get<AppSettings>('/settings').then(r => r.data);
@@ -63,6 +122,12 @@ export const toEntryRequest = (entry: Entry): EntryRequest => ({
 export const toLineRequest = (line: Line): LineRequest => ({
     text: line.text,
     override: line.override,
+});
+
+export const toTagRequest = (tag: Tag): TagRequest => ({
+    name: tag.name,
+    keywords: tag.keywords,
+    colour: tag.colour,
 });
 
 export const newProfileRequest = (name: string): ProfileRequest => ({

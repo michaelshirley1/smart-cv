@@ -1,0 +1,19 @@
+@use 'tokens' as *;
+
+@mixin drop-indicator($position) {
+    &::before {
+        position: absolute;
+        right: 0;
+        left: 0;
+        height: 2px;
+        border-radius: 1px;
+        background: $colour-accent;
+        content: '';
+
+        @if $position == before {
+            top: -3px;
+        } @else {
+            bottom: -3px;
+        }
+    }
+}

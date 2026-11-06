@@ -101,6 +101,31 @@ export interface LineRequest {
     override: LineOverride;
 }
 
+export interface CreateSectionRequest extends SectionRequest {
+    profileId: number;
+}
+
+export interface CreateEntryRequest extends EntryRequest {
+    sectionId: number;
+}
+
+export interface CreateLineRequest extends LineRequest {
+    entryId: number;
+    tagIds: number[];
+}
+
+export type TagColour = '' | 'blue' | 'green' | 'amber' | 'red' | 'purple' | 'teal' | 'pink';
+
+export interface TagRequest {
+    name: string;
+    keywords: string[];
+    colour: string;
+}
+
+export interface CreateTagRequest extends TagRequest {
+    profileId: number;
+}
+
 export interface AppSettings {
     matchingMode: MatchingMode;
     ollamaUrl: string;

@@ -1,0 +1,86 @@
+@use 'sass:list';
+@use '../../../../../styles/tokens' as *;
+
+.tag-row {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+    padding: $space-2;
+    border: $border;
+    border-radius: $radius;
+
+    &-header {
+        display: flex;
+        align-items: center;
+        gap: $space-2;
+    }
+
+    &-pin {
+        color: $colour-text-muted;
+    }
+
+    &-name {
+        flex: 1;
+        min-width: 0;
+        font-weight: $font-weight-strong;
+    }
+
+    &-usage {
+        flex-shrink: 0;
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+    }
+
+    &-description,
+    &-keywords {
+        font-size: $font-size-small;
+        line-height: 1.45;
+    }
+
+    &-description {
+        color: $colour-text-muted;
+    }
+
+    &-keywords {
+        display: block;
+        padding: 2px;
+    }
+
+    &-colours {
+        display: flex;
+        gap: $space-1;
+    }
+
+    &-swatch {
+        flex-shrink: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+
+        @each $name, $colours in $tag-colours {
+            &--#{$name} {
+                background: list.nth($colours, 1);
+                border: 1px solid list.nth($colours, 2);
+            }
+        }
+    }
+
+    &-colour {
+        width: 16px;
+        height: 16px;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        cursor: pointer;
+
+        &--selected {
+            outline: 2px solid $colour-accent;
+            outline-offset: 1px;
+        }
+
+        &:focus-visible {
+            outline: $focus-ring;
+            outline-offset: 1px;
+        }
+    }
+}

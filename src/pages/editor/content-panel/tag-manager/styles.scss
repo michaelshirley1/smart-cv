@@ -1,0 +1,26 @@
+@use '../../../../styles/tokens' as *;
+
+.tag-manager {
+    &-hint {
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+        line-height: 1.45;
+    }
+
+    &-list {
+        display: flex;
+        flex-direction: column;
+        gap: $space-2;
+        list-style: none;
+    }
+
+    &-add {
+        display: flex;
+        align-items: flex-end;
+        gap: $space-2;
+    }
+
+    &-add-name {
+        flex: 1;
+    }
+}

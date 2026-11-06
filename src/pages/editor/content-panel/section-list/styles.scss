@@ -1,0 +1,39 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.section-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    padding: $space-4 0;
+    border-bottom: $border;
+
+    &-title {
+        font-size: $font-size-base;
+        font-weight: $font-weight-strong;
+    }
+
+    &-empty {
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+    }
+
+    &-items {
+        display: flex;
+        flex-direction: column;
+        gap: $space-2;
+        list-style: none;
+    }
+
+    &-item {
+        position: relative;
+
+        &--drop-before {
+            @include drop-indicator(before);
+        }
+
+        &--drop-after {
+            @include drop-indicator(after);
+        }
+    }
+}

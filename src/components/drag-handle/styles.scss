@@ -1,0 +1,29 @@
+@use '../../styles/tokens' as *;
+
+.drag-handle {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: $control-height-small;
+    padding: 0;
+    border: 0;
+    border-radius: $radius;
+    background: transparent;
+    color: $colour-border-strong;
+    cursor: grab;
+
+    &:hover {
+        color: $colour-text-muted;
+    }
+
+    &:focus-visible {
+        outline: $focus-ring;
+        color: $colour-text;
+    }
+
+    &:active {
+        cursor: grabbing;
+    }
+}

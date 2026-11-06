@@ -142,6 +142,42 @@ export interface TemplateRequest {
     values: TemplateValues;
 }
 
+export type SectionDecision = 'untagged' | 'matched' | 'alwaysOn' | 'unmatched' | 'hidden';
+
+export type LineDecision = 'alwaysOn' | 'matched' | 'untagged' | 'fallback' | 'unmatched' | 'overLimit' | 'hidden' | 'sectionExcluded';
+
+export interface TagMatch {
+    tagId: number;
+    name: string;
+    score: number;
+    terms: string[];
+}
+
+export interface SectionResult {
+    sectionId: number;
+    included: boolean;
+    decision: SectionDecision;
+}
+
+export interface LineResult {
+    lineId: number;
+    entryId: number;
+    sectionId: number;
+    score: number;
+    included: boolean;
+    decision: LineDecision;
+}
+
+export interface TailorResult {
+    mode: MatchingMode;
+    matchedTags: TagMatch[];
+    sections: SectionResult[];
+    lines: LineResult[];
+    trimOrder: number[];
+}
+
+export type CvView = 'all' | 'tailored';
+
 export interface AppSettings {
     matchingMode: MatchingMode;
     ollamaUrl: string;

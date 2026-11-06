@@ -29,6 +29,7 @@ public static class ServiceRegistration
         services.AddScoped<ITagFactory, TagFactory>();
         services.AddScoped<ITemplateFactory, TemplateFactory>();
         services.AddScoped<IFontFactory, FontFactory>();
+        services.AddScoped<ITailoringFactory, TailoringFactory>();
 
         return services;
     }

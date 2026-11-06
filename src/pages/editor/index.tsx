@@ -1,6 +1,7 @@
 import React from 'react';
 import { EditorPageProps } from './model';
 import { ProfileProvider, useProfileContext } from './profile-context';
+import { TailoringProvider } from './tailoring-context';
 import TopBar from './top-bar';
 import EditorLayout from './editor-layout';
 import ErrorBanner from '../../components/error-banner';
@@ -21,7 +22,9 @@ const EditorContent: React.FC = () => {
 
 const EditorPage: React.FC<EditorPageProps> = () => (
     <ProfileProvider>
-        <EditorContent />
+        <TailoringProvider>
+            <EditorContent />
+        </TailoringProvider>
     </ProfileProvider>
 );
 

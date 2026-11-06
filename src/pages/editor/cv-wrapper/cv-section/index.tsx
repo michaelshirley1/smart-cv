@@ -6,10 +6,14 @@ import EditableText from '../../../../components/editable-text';
 
 import './styles.scss';
 
-const CvSection: React.FC<CvSectionProps> = ({ section, isPlaceholder, showPlaceholders, edits }) => {
+const CvSection: React.FC<CvSectionProps> = ({ section, isPlaceholder, showPlaceholders, selection, edits }) => {
     const saveTitle = edits && !isPlaceholder
         ? (title: string) => title && edits.saveSection(section.id, { ...toSectionRequest(section), title })
         : undefined;
+
+    const entries = selection
+        ? section.entries.filter(entry => entry.lines.length === 0 || entry.lines.some(line => selection.lineIds.has(line.id)))
+        : section.entries;
 
     return (
         <section className={`cv-section cv-section--${section.kind}${isPlaceholder ? ' cv-section--placeholder' : ''}`}>
@@ -17,13 +21,14 @@ const CvSection: React.FC<CvSectionProps> = ({ section, isPlaceholder, showPlace
                 <EditableText value={section.title} onSave={saveTitle} />
             </h2>
             <div className="cv-section-entries">
-                {section.entries.map(entry => (
+                {entries.map(entry => (
                     <CvEntry
                         key={entry.id}
                         entry={entry}
                         kind={section.kind}
                         isPlaceholder={isPlaceholder}
                         showPlaceholders={showPlaceholders}
+                        selection={selection}
                         edits={edits}
                     />
                 ))}

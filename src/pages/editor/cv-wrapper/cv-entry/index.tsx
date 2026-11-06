@@ -11,9 +11,9 @@ import './styles.scss';
 
 type EntryField = keyof EntryRequest;
 
-const CvEntry: React.FC<CvEntryProps> = ({ entry, kind, isPlaceholder, showPlaceholders, edits }) => {
+const CvEntry: React.FC<CvEntryProps> = ({ entry, kind, isPlaceholder, showPlaceholders, selection, edits }) => {
     const variant = lineVariantFor(kind);
-    const visibleLines = entry.lines.filter(line => line.override !== 'hidden');
+    const visibleLines = entry.lines.filter(line => line.override !== 'hidden' && (!selection || selection.lineIds.has(line.id)));
     const usePlaceholderLines = visibleLines.length === 0 && showPlaceholders && !isPlaceholder;
     const lines = usePlaceholderLines ? placeholderLines(entry.id, variant) : visibleLines;
     const editable = edits && !isPlaceholder;

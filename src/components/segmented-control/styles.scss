@@ -1,0 +1,40 @@
+@use '../../styles/tokens' as *;
+
+.segmented-control {
+    display: inline-flex;
+    padding: 2px;
+    border: $border-strong;
+    border-radius: $radius;
+    background: $colour-surface;
+
+    &-option {
+        height: $control-height - 6px;
+        padding: 0 $space-3;
+        border: 0;
+        border-radius: $radius - 1px;
+        background: transparent;
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+            color: $colour-text;
+        }
+
+        &:focus-visible {
+            outline: $focus-ring;
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        &--active {
+            background: $colour-background;
+            color: $colour-text;
+            font-weight: $font-weight-strong;
+            outline: 1px solid $colour-border;
+        }
+    }
+}

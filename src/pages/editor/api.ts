@@ -16,6 +16,7 @@ import {
     SectionRequest,
     Tag,
     TagRequest,
+    TailorResult,
     Template,
     TemplateRequest,
     TemplateSummary,
@@ -107,6 +108,9 @@ export const deleteTemplate = (name: string) =>
 
 export const getFonts = () =>
     client.get<string[]>('/font').then(r => r.data);
+
+export const tailor = (profileId: number, jobDescription: string) =>
+    client.post<TailorResult>('/tailor', { profileId, jobDescription }).then(r => r.data);
 
 export const getSettings = () =>
     client.get<AppSettings>('/settings').then(r => r.data);

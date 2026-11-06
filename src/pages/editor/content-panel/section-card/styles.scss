@@ -60,6 +60,20 @@
         text-overflow: ellipsis;
     }
 
+    &-status {
+        flex-shrink: 0;
+        font-size: 0.75rem;
+        white-space: nowrap;
+
+        &--in {
+            color: $colour-success;
+        }
+
+        &--out {
+            color: $colour-text-muted;
+        }
+    }
+
     &-count {
         flex-shrink: 0;
         color: $colour-text-muted;

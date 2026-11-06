@@ -3,6 +3,7 @@ import { lineCountLabel, SectionCardProps } from './model';
 import { sectionKindOptions, withAlwaysOn } from '../model';
 import { hasEntryHeader } from '../../cv-wrapper/model';
 import { useContentActions } from '../actions';
+import { useTailoring } from '../../tailoring-context';
 import { useReorder } from '../../../../hooks/useReorder';
 import EntryCard from '../entry-card';
 import DragHandle from '../../../../components/drag-handle';
@@ -19,6 +20,7 @@ import './styles.scss';
 
 const SectionCard: React.FC<SectionCardProps> = ({ section, tagOptions, alwaysOn, expanded, onToggle, handleProps }) => {
     const actions = useContentActions();
+    const status = useTailoring().sectionStatus(section);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [maxLines, setMaxLines] = useState(String(section.maxLines));
     const entryIds = section.entries.map(entry => entry.id);
@@ -54,6 +56,9 @@ const SectionCard: React.FC<SectionCardProps> = ({ section, tagOptions, alwaysOn
                     value={section.title}
                     onSave={title => title && actions.saveSection(section, { title })}
                 />
+                {status && (
+                    <span className={`section-card-status section-card-status--${status.included ? 'in' : 'out'}`}>{status.label}</span>
+                )}
                 <span className="section-card-count">{lineCountLabel(section)}</span>
                 <div className="section-card-actions">
                     <IconButton

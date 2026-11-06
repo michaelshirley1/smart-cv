@@ -6,9 +6,11 @@ import CvSection from './cv-section';
 
 import './styles.scss';
 
-const CvWrapper: React.FC<CvWrapperProps> = ({ profile, variant, showPlaceholders, edits }) => {
+const CvWrapper: React.FC<CvWrapperProps> = ({ profile, variant, showPlaceholders, selection, edits }) => {
     const usePlaceholderSections = profile.sections.length === 0 && showPlaceholders;
-    const sections = usePlaceholderSections ? placeholderSections : profile.sections.filter(section => !section.isHidden);
+    const sections = usePlaceholderSections
+        ? placeholderSections
+        : profile.sections.filter(section => !section.isHidden && (!selection || selection.sectionIds.has(section.id)));
 
     return (
         <div className={`cv-wrapper cv-wrapper--${variant}`}>
@@ -20,6 +22,7 @@ const CvWrapper: React.FC<CvWrapperProps> = ({ profile, variant, showPlaceholder
                         section={section}
                         isPlaceholder={usePlaceholderSections}
                         showPlaceholders={showPlaceholders}
+                        selection={selection}
                         edits={edits}
                     />
                 ))}

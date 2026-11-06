@@ -3,19 +3,29 @@
 
 .cv-canvas {
     display: flex;
-    align-items: flex-start;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-2;
     min-height: 100%;
-    padding: $canvas-padding;
+    padding: $space-3 $canvas-padding $canvas-padding;
 
     &-probe {
         position: fixed;
         top: 0;
         left: 0;
         width: var(--cv-page-width);
-        height: 0;
+        height: var(--cv-page-height);
         visibility: hidden;
         pointer-events: none;
+    }
+
+    &-status {
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+
+        &--over {
+            color: $colour-danger;
+        }
     }
 
     &-scaler {

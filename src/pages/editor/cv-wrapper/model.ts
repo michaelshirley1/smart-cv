@@ -11,10 +11,16 @@ export interface CvEdits {
     saveLine: (id: number, request: LineRequest) => void;
 }
 
+export interface CvSelection {
+    sectionIds: Set<number>;
+    lineIds: Set<number>;
+}
+
 export interface CvWrapperProps {
     profile: ProfileDetail;
     variant: CvVariant;
     showPlaceholders: boolean;
+    selection?: CvSelection;
     edits?: CvEdits;
 }
 

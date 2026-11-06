@@ -3,6 +3,7 @@ import { LineRowProps } from './model';
 import { withAlwaysOn } from '../model';
 import { formatInline } from '../../cv-wrapper/format';
 import { useContentActions } from '../actions';
+import { useTailoring } from '../../tailoring-context';
 import DragHandle from '../../../../components/drag-handle';
 import EditableText from '../../../../components/editable-text';
 import IconButton from '../../../../components/icon-button';
@@ -12,11 +13,12 @@ import './styles.scss';
 
 const LineRow: React.FC<LineRowProps> = ({ line, tagOptions, alwaysOn, handleProps }) => {
     const actions = useContentActions();
+    const status = useTailoring().lineStatus(line);
     const isAlwaysOn = alwaysOn !== undefined && line.tagIds.includes(alwaysOn.id);
     const isHidden = line.override === 'hidden';
 
     return (
-        <div className={`line-row${isHidden ? ' line-row--hidden' : ''}${isAlwaysOn ? ' line-row--always-on' : ''}`}>
+        <div className={`line-row${isHidden ? ' line-row--hidden' : ''}${isAlwaysOn ? ' line-row--always-on' : ''}${status ? ` line-row--${status.included ? 'in' : 'out'}` : ''}`}>
             <DragHandle label="Line" {...handleProps} />
             <div className="line-row-main">
                 <EditableText
@@ -26,6 +28,7 @@ const LineRow: React.FC<LineRowProps> = ({ line, tagOptions, alwaysOn, handlePro
                     format={formatInline}
                     onSave={text => (text ? actions.saveLine(line, { text }) : actions.deleteLine(line.id))}
                 />
+                {status && <span className="line-row-status">{status.label}</span>}
                 <TagInput
                     tags={tagOptions}
                     selectedIds={line.tagIds.filter(id => id !== alwaysOn?.id)}

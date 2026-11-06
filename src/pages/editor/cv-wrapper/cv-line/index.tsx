@@ -13,7 +13,7 @@ const CvLine: React.FC<CvLineProps> = ({ line, variant, isPlaceholder, onSave })
         : undefined;
 
     return (
-        <Element className={`cv-line cv-line--${variant}${isPlaceholder ? ' cv-line--placeholder' : ''}`}>
+        <Element className={`cv-line cv-line--${variant}${isPlaceholder ? ' cv-line--placeholder' : ''}`} data-line-id={line.id}>
             <EditableText value={line.text} format={formatInline} multiline onSave={save} />
         </Element>
     );

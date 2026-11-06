@@ -18,6 +18,20 @@
         border-left: 2px solid $colour-accent;
     }
 
+    &--out &-text {
+        color: $colour-text-muted;
+    }
+
+    &-status {
+        padding: 0 2px;
+        color: $colour-text-muted;
+        font-size: 0.75rem;
+    }
+
+    &--in &-status {
+        color: $colour-success;
+    }
+
     &--hidden &-text {
         color: $colour-text-muted;
         text-decoration: line-through;

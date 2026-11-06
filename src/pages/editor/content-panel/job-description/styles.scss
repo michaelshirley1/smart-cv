@@ -1,0 +1,37 @@
+@use '../../../../styles/tokens' as *;
+
+.job-description {
+    &-actions {
+        display: flex;
+        align-items: center;
+        gap: $space-2;
+    }
+
+    &-mode {
+        margin-left: auto;
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+    }
+
+    &-result {
+        display: flex;
+        flex-direction: column;
+        gap: $space-1;
+    }
+
+    &-result-label {
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+    }
+
+    &-matches {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $space-1;
+    }
+
+    &-empty {
+        font-size: $font-size-small;
+        line-height: 1.45;
+    }
+}

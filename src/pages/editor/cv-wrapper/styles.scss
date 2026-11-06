@@ -1,0 +1,31 @@
+@use '../../../styles/tokens' as *;
+
+.cv-wrapper {
+    color: var(--cv-text-colour);
+    font-family: var(--cv-body-font);
+    font-size: var(--cv-font-size);
+    line-height: var(--cv-line-height);
+    -webkit-font-smoothing: auto;
+
+    &--editor .cv-page {
+        border: $border;
+        background-image: repeating-linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent calc(var(--cv-page-height) - 1px),
+            $colour-page-break calc(var(--cv-page-height) - 1px),
+            $colour-page-break var(--cv-page-height)
+        );
+    }
+}
+
+.cv-page {
+    width: var(--cv-page-width);
+    min-height: var(--cv-page-height);
+    padding: var(--cv-page-margin-top) var(--cv-page-margin-right) var(--cv-page-margin-bottom) var(--cv-page-margin-left);
+    background-color: $colour-page;
+}
+
+.cv-strong {
+    font-weight: 700;
+}

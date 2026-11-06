@@ -1,0 +1,20 @@
+@use '../../../../styles/tokens' as *;
+
+.cv-line {
+    margin: 0;
+
+    &--bullet {
+        position: relative;
+        padding-left: var(--cv-bullet-indent);
+
+        &::before {
+            position: absolute;
+            left: 0;
+            content: var(--cv-bullet);
+        }
+    }
+
+    &--placeholder {
+        color: $colour-placeholder;
+    }
+}

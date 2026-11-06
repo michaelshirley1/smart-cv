@@ -99,7 +99,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
         renameProfile,
         duplicateProfile,
         deleteProfile,
-        applyProfile: setProfile,
+        mutate: (action, fallback) => run(async () => setProfile(await action()), fallback),
     };
 
     return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

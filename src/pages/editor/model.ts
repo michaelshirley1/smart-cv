@@ -82,6 +82,25 @@ export interface ProfileRequest {
     links: string[];
 }
 
+export interface SectionRequest {
+    title: string;
+    kind: SectionKind;
+    maxLines: number;
+    isHidden: boolean;
+}
+
+export interface EntryRequest {
+    heading: string;
+    subheading: string;
+    location: string;
+    dateRange: string;
+}
+
+export interface LineRequest {
+    text: string;
+    override: LineOverride;
+}
+
 export interface AppSettings {
     matchingMode: MatchingMode;
     ollamaUrl: string;

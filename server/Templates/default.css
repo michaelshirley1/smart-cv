@@ -8,7 +8,7 @@
     --cv-body-font: "Garamond", "EB Garamond", "Cormorant Garamond", serif;
     --cv-heading-font: "Garamond", "EB Garamond", "Cormorant Garamond", serif;
     --cv-font-size: 11pt;
-    --cv-line-height: 1.05;
+    --cv-line-height: 1.15;
     --cv-text-colour: #000000;
     --cv-muted-colour: #000000;
     --cv-accent-colour: #000000;
@@ -24,6 +24,7 @@
     --cv-heading-weight: 700;
     --cv-heading-case: uppercase;
     --cv-heading-rule: 0.75pt solid #000000;
+    --cv-summary-title-display: none;
     --cv-section-spacing: 5pt;
     --cv-entry-spacing: 6pt;
     --cv-entry-heading-weight: 700;

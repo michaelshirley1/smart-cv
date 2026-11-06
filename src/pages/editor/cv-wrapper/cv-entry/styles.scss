@@ -1,0 +1,36 @@
+.cv-entry {
+    &-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1em;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    &-heading,
+    &-date {
+        font-weight: var(--cv-entry-heading-weight);
+    }
+
+    &-date,
+    &-location {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    &-subheading {
+        font-style: var(--cv-entry-subheading-style);
+    }
+
+    &-location {
+        color: var(--cv-muted-colour);
+    }
+
+    &-lines {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+}

@@ -16,5 +16,5 @@ export interface ProfileContextValue {
     renameProfile: (name: string) => Promise<void>;
     duplicateProfile: () => Promise<void>;
     deleteProfile: () => Promise<void>;
-    applyProfile: (profile: ProfileDetail) => void;
+    mutate: (action: () => Promise<ProfileDetail>, fallback: string) => Promise<void>;
 }

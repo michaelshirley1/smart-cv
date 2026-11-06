@@ -1,0 +1,34 @@
+@use '../../styles/tokens' as *;
+
+.editable-text {
+    border-radius: 2px;
+
+    &--placeholder {
+        color: $colour-placeholder;
+    }
+
+    &--interactive {
+        cursor: text;
+
+        &:hover {
+            background: $colour-edit-hover;
+        }
+
+        &:focus-visible {
+            outline: 1px solid $colour-border-strong;
+            outline-offset: 1px;
+        }
+    }
+
+    &--editing {
+        display: inline-block;
+        min-width: 2ch;
+        outline: 1px solid $colour-accent;
+        outline-offset: 1px;
+        white-space: pre-wrap;
+
+        &:hover {
+            background: transparent;
+        }
+    }
+}

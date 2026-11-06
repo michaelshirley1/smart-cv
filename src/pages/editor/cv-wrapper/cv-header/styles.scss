@@ -1,0 +1,43 @@
+.cv-header {
+    padding-bottom: 2pt;
+    border-bottom: var(--cv-header-rule);
+    text-align: var(--cv-name-align);
+
+    &-name {
+        margin: 0;
+        font-family: var(--cv-heading-font);
+        font-size: var(--cv-name-size);
+        font-weight: var(--cv-name-weight);
+        line-height: 1.15;
+    }
+
+    &-headline {
+        margin: 2pt 0 0;
+    }
+
+    &-contact {
+        margin: 2pt 0 0;
+        padding: 0;
+        font-size: var(--cv-contact-size);
+        list-style: none;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    &-contact-item {
+        display: inline;
+
+        & + &::before {
+            padding: 0 0.45em;
+            color: var(--cv-text-colour);
+            content: var(--cv-contact-separator);
+        }
+    }
+
+    &-contact-link {
+        color: var(--cv-link-colour);
+        text-decoration: var(--cv-link-decoration);
+    }
+}

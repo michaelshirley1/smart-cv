@@ -48,11 +48,11 @@ public partial class TemplateFileService : ITemplateFileService
         foreach (var name in BuiltInNames)
         {
             var target = PathFor(name);
-            if (File.Exists(target)) continue;
+            using var reader = new StreamReader(OpenBuiltIn(name));
+            var content = reader.ReadToEnd();
+            if (File.Exists(target) && File.ReadAllText(target) == content) continue;
 
-            using var source = OpenBuiltIn(name);
-            using var file = File.Create(target);
-            source.CopyTo(file);
+            File.WriteAllText(target, content);
             copied++;
         }
 

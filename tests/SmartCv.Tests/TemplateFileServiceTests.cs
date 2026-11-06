@@ -16,18 +16,21 @@ public sealed class TemplateFileServiceTests : IDisposable
     }
 
     [Fact]
-    public void EnsureBuiltIns_CopiesMissingFilesOnly()
+    public void EnsureBuiltIns_WritesMissingAndRestoresChangedFiles()
     {
         var service = new TemplateFileService(_paths);
 
         var firstRun = service.EnsureBuiltIns();
+        var unchangedRun = service.EnsureBuiltIns();
         File.WriteAllText(Path.Combine(_paths.Templates, "default.css"), ".cv-wrapper { }");
-        var secondRun = service.EnsureBuiltIns();
+        File.WriteAllText(Path.Combine(_paths.Templates, "mine.css"), ".cv-wrapper { }");
+        var restoreRun = service.EnsureBuiltIns();
 
         Assert.Equal(3, firstRun);
-        Assert.Equal(0, secondRun);
-        Assert.Equal(".cv-wrapper { }", File.ReadAllText(Path.Combine(_paths.Templates, "default.css")));
-        Assert.Contains("--cv-accent-colour", File.ReadAllText(Path.Combine(_paths.Templates, "modern.css")));
+        Assert.Equal(0, unchangedRun);
+        Assert.Equal(1, restoreRun);
+        Assert.Contains("--cv-name-size", File.ReadAllText(Path.Combine(_paths.Templates, "default.css")));
+        Assert.Equal(".cv-wrapper { }", File.ReadAllText(Path.Combine(_paths.Templates, "mine.css")));
     }
 
     public void Dispose()

@@ -1,26 +1,28 @@
 import React from 'react';
-import { AppSettings, EditorPageProps } from './model';
-import { getSettings } from './api';
-import { useFetch } from '../../hooks/useFetch';
+import { EditorPageProps } from './model';
+import { ProfileProvider, useProfileContext } from './profile-context';
+import TopBar from './top-bar';
+import EditorLayout from './editor-layout';
+import ErrorBanner from '../../components/error-banner';
 
 import './styles.scss';
 
-const EditorPage: React.FC<EditorPageProps> = () => {
-    const { data: settings, loading, error } = useFetch<AppSettings | null>(getSettings, null, 'Could not reach the Smart CV service.');
+const EditorContent: React.FC = () => {
+    const { error, clearError } = useProfileContext();
 
     return (
         <div className="editor-page">
-            <header className="editor-top-bar">
-                <span className="editor-top-bar-title">Smart CV</span>
-                <span className="editor-top-bar-status">
-                    {loading && 'Connecting'}
-                    {error}
-                    {settings && `Matching: ${settings.matchingMode}`}
-                </span>
-            </header>
-            <main className="editor-body" />
+            <TopBar />
+            {error && <ErrorBanner message={error} onDismiss={clearError} />}
+            <EditorLayout />
         </div>
     );
 };
+
+const EditorPage: React.FC<EditorPageProps> = () => (
+    <ProfileProvider>
+        <EditorContent />
+    </ProfileProvider>
+);
 
 export default EditorPage;

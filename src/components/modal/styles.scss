@@ -1,0 +1,48 @@
+@use '../../styles/tokens' as *;
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: $z-modal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $space-4;
+    background: $colour-overlay;
+}
+
+.modal {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+    width: 100%;
+    max-width: $modal-width;
+    padding: $space-4;
+    border: $border;
+    border-radius: $radius;
+    background: $colour-background;
+
+    &-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    &-title {
+        font-size: $font-size-large;
+        font-weight: $font-weight-strong;
+    }
+
+    &-body {
+        display: flex;
+        flex-direction: column;
+        gap: $space-3;
+        line-height: 1.5;
+    }
+
+    &-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: $space-2;
+    }
+}

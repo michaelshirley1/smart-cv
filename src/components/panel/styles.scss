@@ -1,0 +1,44 @@
+@use '../../styles/tokens' as *;
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: $colour-background;
+
+    &-header {
+        display: flex;
+        align-items: center;
+        gap: $space-2;
+        height: $control-height + $space-3;
+        padding: 0 $space-2 0 $space-4;
+        border-bottom: $border;
+    }
+
+    &-header-title,
+    &-header-toggle,
+    &-body {
+        transition: opacity $panel-transition $panel-collapse-delay + $panel-transition-duration;
+    }
+
+    &-header-icon {
+        color: $colour-text-muted;
+    }
+
+    &-header-title {
+        flex: 1;
+        overflow: hidden;
+        font-size: $font-size-base;
+        font-weight: $font-weight-strong;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: $space-4;
+    }
+}

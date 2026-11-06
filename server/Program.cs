@@ -8,7 +8,7 @@ public static class Program
     public static void Main(string[] args)
     {
         var options = AppOptions.FromArgs(args);
-        var paths = AppPaths.ForCurrentUser();
+        var paths = options.CreatePaths();
         paths.EnsureCreated();
         var app = ServerSetup.Build(args, options, paths);
 

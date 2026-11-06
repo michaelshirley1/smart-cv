@@ -1,0 +1,24 @@
+@use '../../../styles/tokens' as *;
+
+.top-bar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: $space-4;
+    height: $top-bar-height;
+    padding: 0 $space-4;
+    border-bottom: $border;
+    background: $colour-background;
+
+    &-title {
+        font-size: $font-size-large;
+        font-weight: $font-weight-strong;
+    }
+
+    &-actions {
+        display: flex;
+        flex: 1;
+        justify-content: flex-end;
+        gap: $space-2;
+    }
+}

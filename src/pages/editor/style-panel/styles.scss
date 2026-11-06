@@ -1,0 +1,22 @@
+@use '../../../styles/tokens' as *;
+
+.style-panel {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+
+    &-summary {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: $space-2 $space-4;
+        margin: 0;
+    }
+
+    &-summary-label {
+        color: $colour-text-muted;
+    }
+
+    &-summary-value {
+        margin: 0;
+    }
+}

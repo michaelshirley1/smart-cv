@@ -1,0 +1,99 @@
+@use '../../../../styles/tokens' as *;
+
+.profile-switcher {
+    position: relative;
+
+    &-trigger {
+        display: flex;
+        align-items: center;
+        gap: $space-2;
+        max-width: $menu-width;
+        height: $control-height;
+        padding: 0 $space-2 0 $space-3;
+        border: $border-strong;
+        border-radius: $radius;
+        background: $colour-background;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+            background: $colour-hover;
+        }
+
+        &:focus-visible {
+            outline: $focus-ring;
+            outline-offset: 1px;
+        }
+
+        &:disabled {
+            cursor: default;
+            color: $colour-text-muted;
+        }
+    }
+
+    &-label {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &-menu {
+        position: absolute;
+        top: calc(100% + #{$space-1});
+        left: 0;
+        z-index: $z-menu;
+        width: $menu-width;
+        border: $border-strong;
+        border-radius: $radius;
+        background: $colour-background;
+    }
+
+    &-list {
+        max-height: 50vh;
+        overflow-y: auto;
+        padding: $space-1;
+        list-style: none;
+    }
+
+    &-option,
+    &-action {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $space-2;
+        width: 100%;
+        height: $control-height;
+        padding: 0 $space-2;
+        border: 0;
+        border-radius: $radius;
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            background: $colour-hover;
+            outline: none;
+        }
+    }
+
+    &-option--active {
+        font-weight: $font-weight-strong;
+    }
+
+    &-option-name {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &-actions {
+        display: flex;
+        flex-direction: column;
+        padding: $space-1;
+        border-top: $border;
+    }
+
+    &-action--danger {
+        color: $colour-danger;
+    }
+}

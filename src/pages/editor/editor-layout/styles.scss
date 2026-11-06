@@ -1,0 +1,81 @@
+@use '../../../styles/tokens' as *;
+@use '../../../components/panel/collapsed' as panel;
+
+.editor-layout {
+    display: grid;
+    flex: 1;
+    grid-template-columns: $panel-rail-width minmax(0, 1fr) $panel-rail-width;
+    min-height: 0;
+    transition: grid-template-columns $panel-transition $panel-collapse-delay;
+
+    &-left,
+    &-centre,
+    &-right {
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    &-left {
+        border-right: $border;
+    }
+
+    &-right {
+        border-left: $border;
+    }
+
+    &-centre {
+        overflow: auto;
+        background: $colour-surface;
+    }
+
+    &--rest:has(.editor-layout-left:hover),
+    &--rest:has(.editor-layout-left:focus-within):not(:has(.editor-layout-right:hover)) {
+        grid-template-columns: $panel-half-width minmax(0, 1fr) $panel-collapsed-width;
+        transition-delay: $panel-hover-delay;
+
+        .editor-layout-right {
+            @include panel.collapsed;
+        }
+    }
+
+    &--rest:has(.editor-layout-right:hover),
+    &--rest:has(.editor-layout-right:focus-within):not(:has(.editor-layout-left:hover)) {
+        grid-template-columns: $panel-collapsed-width minmax(0, 1fr) $panel-half-width;
+        transition-delay: $panel-hover-delay;
+
+        .editor-layout-left {
+            @include panel.collapsed;
+        }
+    }
+
+    &--left-full {
+        grid-template-columns: minmax(0, 1fr) 0 0;
+        transition: none;
+
+        .editor-layout-left {
+            border-right: 0;
+        }
+
+        .editor-layout-centre,
+        .editor-layout-right {
+            visibility: hidden;
+            border: 0;
+        }
+    }
+
+    &--right-full {
+        grid-template-columns: 0 0 minmax(0, 1fr);
+        transition: none;
+
+        .editor-layout-right {
+            border-left: 0;
+        }
+
+        .editor-layout-left,
+        .editor-layout-centre {
+            visibility: hidden;
+            border: 0;
+        }
+    }
+}

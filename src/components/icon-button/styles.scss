@@ -1,0 +1,30 @@
+@use '../../styles/tokens' as *;
+
+.icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: $control-height;
+    height: $control-height;
+    padding: 0;
+    border: 0;
+    border-radius: $radius;
+    background: transparent;
+    color: $colour-text-muted;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        background: $colour-hover;
+        color: $colour-text;
+    }
+
+    &:focus-visible {
+        outline: $focus-ring;
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}

@@ -1,31 +1,6 @@
-@use '../../styles/tokens' as *;
-
 .editor-page {
     display: flex;
     flex-direction: column;
     height: 100%;
-}
-
-.editor-top-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: $top-bar-height;
-    padding: 0 $space-4;
-    border-bottom: $border;
-
-    &-title {
-        font-size: $font-size-large;
-        font-weight: $font-weight-strong;
-    }
-
-    &-status {
-        color: $colour-text-muted;
-        font-size: $font-size-small;
-    }
-}
-
-.editor-body {
-    flex: 1;
-    background: $colour-surface;
+    overflow: hidden;
 }

@@ -14,13 +14,22 @@ public class AppOptions
     public const string DesktopServerUrl = "http://127.0.0.1:0";
 
     public AppMode Mode { get; init; } = AppMode.Desktop;
+    public string? DataFolder { get; init; }
 
     public string ServerUrl => Mode == AppMode.Desktop ? DesktopServerUrl : DevServerUrl;
 
+    public AppPaths CreatePaths() =>
+        DataFolder is null ? AppPaths.ForCurrentUser() : new AppPaths(Path.GetFullPath(DataFolder));
+
     public static AppOptions FromArgs(string[] args)
     {
-        if (args.Contains("--headless")) return new AppOptions { Mode = AppMode.Headless };
-        if (args.Contains("--dev")) return new AppOptions { Mode = AppMode.Dev };
-        return new AppOptions();
+        var dataIndex = Array.IndexOf(args, "--data");
+        var dataFolder = dataIndex >= 0 && dataIndex + 1 < args.Length ? args[dataIndex + 1] : null;
+
+        var mode = args.Contains("--headless") ? AppMode.Headless
+            : args.Contains("--dev") ? AppMode.Dev
+            : AppMode.Desktop;
+
+        return new AppOptions { Mode = mode, DataFolder = dataFolder };
     }
 }

@@ -1,9 +1,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.FileProviders;
-using SmartCv.Factories;
 using SmartCv.Repositories;
-using SmartCv.Services;
 
 namespace SmartCv.Host;
 
@@ -25,14 +23,7 @@ public static class ServerSetup
         builder.Services.AddProblemDetails();
 
         builder.Services.AddSingleton(options);
-        builder.Services.AddSingleton(paths);
-        builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
-        builder.Services.AddSingleton<ITemplateFileService, TemplateFileService>();
-
-        builder.Services.AddScoped<ISchemaRepository, SchemaRepository>();
-        builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
-
-        builder.Services.AddScoped<ISettingsFactory, SettingsFactory>();
+        builder.Services.AddSmartCv(paths);
 
         var app = builder.Build();
 

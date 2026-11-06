@@ -1,3 +1,4 @@
+using Dapper;
 using Microsoft.Data.Sqlite;
 using SmartCv.Host;
 
@@ -11,6 +12,11 @@ public interface IDbConnectionFactory
 public class DbConnectionFactory : IDbConnectionFactory
 {
     private readonly string _connectionString;
+
+    static DbConnectionFactory()
+    {
+        SqlMapper.AddTypeHandler(new JsonListTypeHandler());
+    }
 
     public DbConnectionFactory(IAppPaths paths)
     {

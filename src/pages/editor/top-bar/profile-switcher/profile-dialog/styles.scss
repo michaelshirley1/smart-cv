@@ -1,0 +1,13 @@
+@use '../../../../../styles/tokens' as *;
+
+.profile-dialog {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+
+    &-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: $space-2;
+    }
+}

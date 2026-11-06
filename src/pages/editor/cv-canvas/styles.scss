@@ -1,0 +1,25 @@
+@use '../../../styles/tokens' as *;
+
+.cv-canvas {
+    display: flex;
+    justify-content: center;
+    min-height: 100%;
+    padding: $space-6 $space-5;
+
+    &-page {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        max-width: 8.5in;
+        height: fit-content;
+        aspect-ratio: 8.5 / 11;
+        padding: $space-6;
+        border: $border;
+        background: $colour-page;
+    }
+
+    &-page-name {
+        font-size: $font-size-large;
+        font-weight: $font-weight-strong;
+    }
+}

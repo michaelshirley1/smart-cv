@@ -34,9 +34,9 @@ public class SchemaRepository : ISchemaRepository
                     Email TEXT NOT NULL DEFAULT '',
                     Phone TEXT NOT NULL DEFAULT '',
                     Location TEXT NOT NULL DEFAULT '',
-                    Links TEXT NOT NULL DEFAULT '',
-                    CreatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    UpdatedAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                    Links TEXT NOT NULL DEFAULT '[]',
+                    CreatedAt TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+                    UpdatedAt TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
                 );
 
                 CREATE TABLE IF NOT EXISTS Sections (
@@ -71,7 +71,7 @@ public class SchemaRepository : ISchemaRepository
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     ProfileId INTEGER NOT NULL REFERENCES Profiles (Id) ON DELETE CASCADE,
                     Name TEXT NOT NULL,
-                    Keywords TEXT NOT NULL DEFAULT '',
+                    Keywords TEXT NOT NULL DEFAULT '[]',
                     Colour TEXT NOT NULL DEFAULT '',
                     IsAlwaysOn INTEGER NOT NULL DEFAULT 0,
                     UNIQUE (ProfileId, Name)

@@ -1,0 +1,63 @@
+@use '../../styles/tokens' as *;
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: $space-2;
+    height: $control-height;
+    padding: 0 $space-3;
+    border: 1px solid transparent;
+    border-radius: $radius;
+    font-size: $font-size-base;
+    font-weight: $font-weight-strong;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: $focus-ring;
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &--primary {
+        background: $colour-accent;
+        color: $colour-text-inverse;
+
+        &:hover:not(:disabled) {
+            background: $colour-accent-hover;
+        }
+    }
+
+    &--secondary {
+        background: $colour-background;
+        border-color: $colour-border-strong;
+        color: $colour-text;
+
+        &:hover:not(:disabled) {
+            background: $colour-hover;
+        }
+    }
+
+    &--ghost {
+        background: transparent;
+        color: $colour-text;
+
+        &:hover:not(:disabled) {
+            background: $colour-hover;
+        }
+    }
+
+    &--danger {
+        background: $colour-danger;
+        color: $colour-text-inverse;
+
+        &:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+    }
+}

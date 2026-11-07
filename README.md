@@ -1,4 +1,25 @@
-# Smart CV
+<table align="center">
+  <tr>
+    <td valign="middle">
+      <picture>
+       <img src="public/favicon.svg" alt="Smart CV" width="72" />
+      </picture>
+    </td>
+    <td valign="middle" style="padding-left: 12px;">
+      <h1>Smart CV</h1>
+    </td>
+  </tr>
+</table>
+
+<p align="center">Dynamic Resume Creator</p>
+
+<p align="center">
+  <img alt="CI" src="https://github.com/michaelshirley1/door-manager-prod/actions/workflows/ci.yml/badge.svg">
+  <img alt=".NET 8" src="https://img.shields.io/badge/.NET-8-512BD4">
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-61DAFB">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-4.9-3178C6">
+</p>
+
 
 <img width="1420" height="889" alt="image" src="https://github.com/user-attachments/assets/37a165da-947b-4e78-a057-6a2bd85835f2" />
 

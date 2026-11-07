@@ -10,6 +10,8 @@ public interface IClientAddress
 
 public class ClientAddress : IClientAddress
 {
+    public static readonly string[] LocalHosts = ["127.0.0.1", "localhost"];
+
     private readonly AppOptions _options;
     private readonly IServer _server;
 

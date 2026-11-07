@@ -56,11 +56,14 @@ Get the latest build from [Releases](../../releases/latest):
 | Platform | File |
 |---|---|
 | Windows | `SmartCv-<version>-win-x64.exe` |
-| macOS (Apple Silicon) | `SmartCv-<version>-osx-arm64.zip` |
-| macOS (Intel) | `SmartCv-<version>-osx-x64.zip` |
-| Linux | `SmartCv-<version>-linux-x64.tar.gz` |
+| macOS (Apple Silicon), experimental | `SmartCv-<version>-osx-arm64.zip` |
+| macOS (Intel), experimental | `SmartCv-<version>-osx-x64.zip` |
+| Linux, experimental | `SmartCv-<version>-linux-x64.tar.gz` |
 
 No .NET install is needed.
+
+Windows is the tested platform. The macOS and Linux builds are produced by the same pipeline but haven't been
+tried on real machines yet; if you run one, please open an issue with how it went.
 
 - **Windows**: run the exe. SmartScreen may warn about an unknown publisher; choose *More info → Run anyway*.
 - **macOS**: unzip and move `SmartCv.app` to Applications. The app isn't signed, so the first time
@@ -198,3 +201,7 @@ Repositories hold only SQL and its execution.
 
 All front-end styling is in SCSS; templates are CSS custom properties on `.cv-wrapper`, so React never sets a
 style.
+
+## License
+
+[MIT](LICENSE) © Michael Shirley

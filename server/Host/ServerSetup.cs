@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.Extensions.FileProviders;
 using SmartCv.Repositories;
 
@@ -22,6 +23,7 @@ public static class ServerSetup
             .AddJsonOptions(json => json.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase)));
         builder.Services.AddOpenApi();
         builder.Services.AddProblemDetails();
+        builder.Services.PostConfigure<HostFilteringOptions>(hosts => hosts.AllowedHosts = ClientAddress.LocalHosts);
 
         builder.Services.AddSingleton(options);
         builder.Services.AddSmartCv(paths);

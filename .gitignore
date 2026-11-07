@@ -10,7 +10,6 @@ tests/**/obj/
 .vs/
 .vscode/
 .idea/
-.claude/
 *.log
 PLAN.md
 TestResults/

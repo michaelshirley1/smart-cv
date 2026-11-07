@@ -93,6 +93,10 @@
         border-top: $border;
     }
 
+    &-file {
+        display: none;
+    }
+
     &-action--danger {
         color: $colour-danger;
     }

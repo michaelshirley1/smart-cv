@@ -6,13 +6,13 @@ namespace SmartCv.Repositories;
 
 public interface IProfileRepository
 {
-    IEnumerable<Profile> GetAll();
-    Profile? GetById(int id);
-    int Create(Profile profile);
-    int Update(Profile profile);
-    int Delete(int id);
-    int ReplaceTemplate(string currentName, string newName);
-    int SaveJobDescription(int id, string jobDescription);
+    Task<IEnumerable<Profile>> GetAll();
+    Task<Profile?> GetById(int id);
+    Task<int> Create(Profile profile);
+    Task<int> Update(Profile profile);
+    Task<int> Delete(int id);
+    Task<int> ReplaceTemplate(string currentName, string newName);
+    Task<int> SaveJobDescription(int id, string jobDescription);
 }
 
 public class ProfileRepository : IProfileRepository
@@ -28,7 +28,7 @@ public class ProfileRepository : IProfileRepository
         _logger = logger;
     }
 
-    public IEnumerable<Profile> GetAll()
+    public async Task<IEnumerable<Profile>> GetAll()
     {
         try
         {
@@ -37,8 +37,8 @@ public class ProfileRepository : IProfileRepository
                 FROM Profiles
                 ORDER BY UpdatedAt DESC, Id DESC
                 """;
-            using var connection = _connectionFactory.Create();
-            var profiles = connection.Query<Profile>(sql).ToList();
+            await using var connection = await _connectionFactory.Create();
+            var profiles = (await connection.QueryAsync<Profile>(sql)).ToList();
             return profiles;
         }
         catch (SqliteException ex)
@@ -48,7 +48,7 @@ public class ProfileRepository : IProfileRepository
         }
     }
 
-    public Profile? GetById(int id)
+    public async Task<Profile?> GetById(int id)
     {
         try
         {
@@ -57,8 +57,8 @@ public class ProfileRepository : IProfileRepository
                 FROM Profiles
                 WHERE Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var profile = connection.QuerySingleOrDefault<Profile>(sql, new { Id = id });
+            await using var connection = await _connectionFactory.Create();
+            var profile = await connection.QuerySingleOrDefaultAsync<Profile>(sql, new { Id = id });
             return profile;
         }
         catch (SqliteException ex)
@@ -68,7 +68,7 @@ public class ProfileRepository : IProfileRepository
         }
     }
 
-    public int Create(Profile profile)
+    public async Task<int> Create(Profile profile)
     {
         try
         {
@@ -77,8 +77,8 @@ public class ProfileRepository : IProfileRepository
                 VALUES (@Name, @TemplateName, @TargetPages, @FullName, @Headline, @Email, @Phone, @Location, @Links)
                 RETURNING Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var id = connection.ExecuteScalar<int>(sql, profile);
+            await using var connection = await _connectionFactory.Create();
+            var id = await connection.ExecuteScalarAsync<int>(sql, profile);
             return id;
         }
         catch (SqliteException ex)
@@ -88,7 +88,7 @@ public class ProfileRepository : IProfileRepository
         }
     }
 
-    public int Update(Profile profile)
+    public async Task<int> Update(Profile profile)
     {
         try
         {
@@ -106,8 +106,8 @@ public class ProfileRepository : IProfileRepository
                     UpdatedAt = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
                 WHERE Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var affected = connection.Execute(sql, profile);
+            await using var connection = await _connectionFactory.Create();
+            var affected = await connection.ExecuteAsync(sql, profile);
             return affected;
         }
         catch (SqliteException ex)
@@ -117,7 +117,7 @@ public class ProfileRepository : IProfileRepository
         }
     }
 
-    public int Delete(int id)
+    public async Task<int> Delete(int id)
     {
         try
         {
@@ -125,8 +125,8 @@ public class ProfileRepository : IProfileRepository
                 DELETE FROM Profiles
                 WHERE Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var affected = connection.Execute(sql, new { Id = id });
+            await using var connection = await _connectionFactory.Create();
+            var affected = await connection.ExecuteAsync(sql, new { Id = id });
             return affected;
         }
         catch (SqliteException ex)
@@ -136,7 +136,7 @@ public class ProfileRepository : IProfileRepository
         }
     }
 
-    public int ReplaceTemplate(string currentName, string newName)
+    public async Task<int> ReplaceTemplate(string currentName, string newName)
     {
         try
         {
@@ -145,8 +145,8 @@ public class ProfileRepository : IProfileRepository
                 SET TemplateName = @NewName
                 WHERE TemplateName = @CurrentName
                 """;
-            using var connection = _connectionFactory.Create();
-            var affected = connection.Execute(sql, new { CurrentName = currentName, NewName = newName });
+            await using var connection = await _connectionFactory.Create();
+            var affected = await connection.ExecuteAsync(sql, new { CurrentName = currentName, NewName = newName });
             return affected;
         }
         catch (SqliteException ex)
@@ -156,7 +156,7 @@ public class ProfileRepository : IProfileRepository
         }
     }
 
-    public int SaveJobDescription(int id, string jobDescription)
+    public async Task<int> SaveJobDescription(int id, string jobDescription)
     {
         try
         {
@@ -165,8 +165,8 @@ public class ProfileRepository : IProfileRepository
                 SET JobDescription = @JobDescription
                 WHERE Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var affected = connection.Execute(sql, new { Id = id, JobDescription = jobDescription });
+            await using var connection = await _connectionFactory.Create();
+            var affected = await connection.ExecuteAsync(sql, new { Id = id, JobDescription = jobDescription });
             return affected;
         }
         catch (SqliteException ex)

@@ -96,19 +96,20 @@
 
     &-settings {
         display: flex;
+        flex-wrap: wrap;
         gap: $space-2;
     }
 
     &-kind {
-        flex: 1;
+        flex: 1 1 120px;
     }
 
-    &-max-lines {
-        flex: 0 0 88px;
+    &-limit {
+        flex: 0 1 100px;
     }
 
     &-priority {
-        flex: 0 0 104px;
+        flex: 0 1 104px;
     }
 
     &-tags {

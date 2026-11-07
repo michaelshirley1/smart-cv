@@ -6,16 +6,16 @@ namespace SmartCv.Repositories;
 
 public interface ILineRepository
 {
-    IEnumerable<Line> GetByProfileId(int profileId);
-    IEnumerable<Line> GetByEntryId(int entryId);
-    Line? GetById(int id);
-    int? GetProfileId(int id);
-    int Create(Line line);
-    int Update(Line line);
-    int Delete(int id);
-    int Reorder(IReadOnlyList<int> ids);
-    IEnumerable<TagLink> GetTagLinks(int profileId);
-    int SetTags(int lineId, IEnumerable<int> tagIds);
+    Task<IEnumerable<Line>> GetByProfileId(int profileId);
+    Task<IEnumerable<Line>> GetByEntryId(int entryId);
+    Task<Line?> GetById(int id);
+    Task<int?> GetProfileId(int id);
+    Task<int> Create(Line line);
+    Task<int> Update(Line line);
+    Task<int> Delete(int id);
+    Task<int> Reorder(IReadOnlyList<int> ids);
+    Task<IEnumerable<TagLink>> GetTagLinks(int profileId);
+    Task<int> SetTags(int lineId, IEnumerable<int> tagIds);
 }
 
 public class LineRepository : ILineRepository
@@ -31,7 +31,7 @@ public class LineRepository : ILineRepository
         _logger = logger;
     }
 
-    public IEnumerable<Line> GetByProfileId(int profileId)
+    public async Task<IEnumerable<Line>> GetByProfileId(int profileId)
     {
         try
         {
@@ -43,8 +43,8 @@ public class LineRepository : ILineRepository
                 WHERE s.ProfileId = @ProfileId
                 ORDER BY l.SortOrder, l.Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var lines = connection.Query<Line>(sql, new { ProfileId = profileId }).ToList();
+            await using var connection = await _connectionFactory.Create();
+            var lines = (await connection.QueryAsync<Line>(sql, new { ProfileId = profileId })).ToList();
             return lines;
         }
         catch (SqliteException ex)
@@ -54,7 +54,7 @@ public class LineRepository : ILineRepository
         }
     }
 
-    public IEnumerable<Line> GetByEntryId(int entryId)
+    public async Task<IEnumerable<Line>> GetByEntryId(int entryId)
     {
         try
         {
@@ -64,8 +64,8 @@ public class LineRepository : ILineRepository
                 WHERE l.EntryId = @EntryId
                 ORDER BY l.SortOrder, l.Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var lines = connection.Query<Line>(sql, new { EntryId = entryId }).ToList();
+            await using var connection = await _connectionFactory.Create();
+            var lines = (await connection.QueryAsync<Line>(sql, new { EntryId = entryId })).ToList();
             return lines;
         }
         catch (SqliteException ex)
@@ -75,7 +75,7 @@ public class LineRepository : ILineRepository
         }
     }
 
-    public Line? GetById(int id)
+    public async Task<Line?> GetById(int id)
     {
         try
         {
@@ -84,8 +84,8 @@ public class LineRepository : ILineRepository
                 FROM Lines l
                 WHERE l.Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var line = connection.QuerySingleOrDefault<Line>(sql, new { Id = id });
+            await using var connection = await _connectionFactory.Create();
+            var line = await connection.QuerySingleOrDefaultAsync<Line>(sql, new { Id = id });
             return line;
         }
         catch (SqliteException ex)
@@ -95,7 +95,7 @@ public class LineRepository : ILineRepository
         }
     }
 
-    public int? GetProfileId(int id)
+    public async Task<int?> GetProfileId(int id)
     {
         try
         {
@@ -106,8 +106,8 @@ public class LineRepository : ILineRepository
                 INNER JOIN Sections s ON s.Id = e.SectionId
                 WHERE l.Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var profileId = connection.QuerySingleOrDefault<int?>(sql, new { Id = id });
+            await using var connection = await _connectionFactory.Create();
+            var profileId = await connection.QuerySingleOrDefaultAsync<int?>(sql, new { Id = id });
             return profileId;
         }
         catch (SqliteException ex)
@@ -117,7 +117,7 @@ public class LineRepository : ILineRepository
         }
     }
 
-    public int Create(Line line)
+    public async Task<int> Create(Line line)
     {
         try
         {
@@ -131,8 +131,8 @@ public class LineRepository : ILineRepository
                     @Priority)
                 RETURNING Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var id = connection.ExecuteScalar<int>(sql, new
+            await using var connection = await _connectionFactory.Create();
+            var id = await connection.ExecuteScalarAsync<int>(sql, new
             {
                 line.EntryId,
                 line.Text,
@@ -148,7 +148,7 @@ public class LineRepository : ILineRepository
         }
     }
 
-    public int Update(Line line)
+    public async Task<int> Update(Line line)
     {
         try
         {
@@ -159,8 +159,8 @@ public class LineRepository : ILineRepository
                     Priority = @Priority
                 WHERE Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var affected = connection.Execute(sql, new
+            await using var connection = await _connectionFactory.Create();
+            var affected = await connection.ExecuteAsync(sql, new
             {
                 line.Id,
                 line.Text,
@@ -176,7 +176,7 @@ public class LineRepository : ILineRepository
         }
     }
 
-    public int Delete(int id)
+    public async Task<int> Delete(int id)
     {
         try
         {
@@ -184,8 +184,8 @@ public class LineRepository : ILineRepository
                 DELETE FROM Lines
                 WHERE Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var affected = connection.Execute(sql, new { Id = id });
+            await using var connection = await _connectionFactory.Create();
+            var affected = await connection.ExecuteAsync(sql, new { Id = id });
             return affected;
         }
         catch (SqliteException ex)
@@ -195,7 +195,7 @@ public class LineRepository : ILineRepository
         }
     }
 
-    public int Reorder(IReadOnlyList<int> ids)
+    public async Task<int> Reorder(IReadOnlyList<int> ids)
     {
         try
         {
@@ -204,10 +204,10 @@ public class LineRepository : ILineRepository
                 SET SortOrder = @SortOrder
                 WHERE Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            using var transaction = connection.BeginTransaction();
-            var affected = connection.Execute(sql, ids.Select((id, index) => new { Id = id, SortOrder = index }), transaction);
-            transaction.Commit();
+            await using var connection = await _connectionFactory.Create();
+            await using var transaction = await connection.BeginTransactionAsync();
+            var affected = await connection.ExecuteAsync(sql, ids.Select((id, index) => new { Id = id, SortOrder = index }), transaction);
+            await transaction.CommitAsync();
             return affected;
         }
         catch (SqliteException ex)
@@ -217,7 +217,7 @@ public class LineRepository : ILineRepository
         }
     }
 
-    public IEnumerable<TagLink> GetTagLinks(int profileId)
+    public async Task<IEnumerable<TagLink>> GetTagLinks(int profileId)
     {
         try
         {
@@ -227,8 +227,8 @@ public class LineRepository : ILineRepository
                 INNER JOIN Tags t ON t.Id = lt.TagId
                 WHERE t.ProfileId = @ProfileId
                 """;
-            using var connection = _connectionFactory.Create();
-            var links = connection.Query<TagLink>(sql, new { ProfileId = profileId }).ToList();
+            await using var connection = await _connectionFactory.Create();
+            var links = (await connection.QueryAsync<TagLink>(sql, new { ProfileId = profileId })).ToList();
             return links;
         }
         catch (SqliteException ex)
@@ -238,7 +238,7 @@ public class LineRepository : ILineRepository
         }
     }
 
-    public int SetTags(int lineId, IEnumerable<int> tagIds)
+    public async Task<int> SetTags(int lineId, IEnumerable<int> tagIds)
     {
         try
         {
@@ -250,11 +250,11 @@ public class LineRepository : ILineRepository
                 INSERT INTO LineTags (LineId, TagId)
                 VALUES (@LineId, @TagId)
                 """;
-            using var connection = _connectionFactory.Create();
-            using var transaction = connection.BeginTransaction();
-            connection.Execute(deleteSql, new { LineId = lineId }, transaction);
-            var affected = connection.Execute(insertSql, tagIds.Distinct().Select(tagId => new { LineId = lineId, TagId = tagId }), transaction);
-            transaction.Commit();
+            await using var connection = await _connectionFactory.Create();
+            await using var transaction = await connection.BeginTransactionAsync();
+            await connection.ExecuteAsync(deleteSql, new { LineId = lineId }, transaction);
+            var affected = await connection.ExecuteAsync(insertSql, tagIds.Distinct().Select(tagId => new { LineId = lineId, TagId = tagId }), transaction);
+            await transaction.CommitAsync();
             return affected;
         }
         catch (SqliteException ex)

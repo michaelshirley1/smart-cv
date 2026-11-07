@@ -25,27 +25,27 @@ public class OllamaTailoringTests
         }
     }
 
-    private static (TestDatabase Database, FakeOllama Ollama) CreateDatabase(string model = "llama3.2")
+    private static async Task<(TestDatabase Database, FakeOllama Ollama)> CreateDatabase(string model = "llama3.2")
     {
         var ollama = new FakeOllama();
         var database = new TestDatabase(services => services.AddSingleton<IOllamaService>(ollama));
-        database.Get<ISettingsFactory>().Update(new AppSettings { MatchingMode = MatchingMode.Ollama, OllamaModel = model });
+        await database.Get<ISettingsFactory>().Update(new AppSettings { MatchingMode = MatchingMode.Ollama, OllamaModel = model });
         return (database, ollama);
     }
 
     [Fact]
-    public void ModelScores_DecideTheLines()
+    public async Task ModelScores_DecideTheLines()
     {
-        var (database, ollama) = CreateDatabase();
+        var (database, ollama) = await CreateDatabase();
         using var _ = database;
         ollama.Score = line => line.Text.Contains("React") ? 9 : line.Text.Contains("design") ? 6 : 2;
-        var cv = CreateCv(database);
-        var entry = cv.AddSection("Experience", SectionKind.Experience);
-        var react = cv.AddLine(entry, "Built **React** apps");
-        var design = cv.AddLine(entry, "Ran design reviews");
-        var unrelated = cv.AddLine(entry, "Managed the office plants");
+        var cv = await CreateCv(database);
+        var entry = await cv.AddSection("Experience", SectionKind.Experience);
+        var react = await cv.AddLine(entry, "Built **React** apps");
+        var design = await cv.AddLine(entry, "Ran design reviews");
+        var unrelated = await cv.AddLine(entry, "Managed the office plants");
 
-        var result = cv.Tailor("Frontend engineer");
+        var result = await cv.Tailor("Frontend engineer");
 
         Assert.Equal(MatchingMode.Ollama, result.Mode);
         Assert.Equal("llama3.2", result.Model);
@@ -58,53 +58,53 @@ public class OllamaTailoringTests
     }
 
     [Fact]
-    public void RelevantLines_KeepATaggedSectionThatKeywordsMissed()
+    public async Task RelevantLines_KeepATaggedSectionThatKeywordsMissed()
     {
-        var (database, ollama) = CreateDatabase();
+        var (database, ollama) = await CreateDatabase();
         using var _ = database;
         ollama.Score = line => line.Text.Contains("pipeline") ? 8 : 0;
-        var cv = CreateCv(database);
-        var entry = cv.AddSection("Data Projects", SectionKind.Projects, tags: "Data");
-        var line = cv.AddLine(entry, "Built a streaming pipeline");
+        var cv = await CreateCv(database);
+        var entry = await cv.AddSection("Data Projects", SectionKind.Projects, tags: "Data");
+        var line = await cv.AddLine(entry, "Built a streaming pipeline");
 
-        var result = cv.Tailor("Event-driven systems engineer");
+        var result = await cv.Tailor("Event-driven systems engineer");
 
         Assert.Equal(SectionDecision.Matched, result.Sections.Single().Decision);
         Assert.True(Line(result, line).Included);
     }
 
     [Fact]
-    public void PinnedAndHiddenLines_AreNotSentToTheModel()
+    public async Task PinnedAndHiddenLines_AreNotSentToTheModel()
     {
-        var (database, ollama) = CreateDatabase();
+        var (database, ollama) = await CreateDatabase();
         using var _ = database;
-        var cv = CreateCv(database);
-        var entry = cv.AddSection("Experience", SectionKind.Experience);
-        var normal = cv.AddLine(entry, "Normal line");
-        cv.AddLine(entry, "Pinned line", Tag.AlwaysOnName);
-        var hidden = cv.AddLine(entry, "Hidden line");
-        database.Get<ILineFactory>().Update(hidden, new LineRequest { Text = "Hidden line", Override = LineOverride.Hidden });
-        cv.AddLine(cv.AddSection("Skills", SectionKind.Skills, tags: Tag.AlwaysOnName), "Pinned section line");
+        var cv = await CreateCv(database);
+        var entry = await cv.AddSection("Experience", SectionKind.Experience);
+        var normal = await cv.AddLine(entry, "Normal line");
+        await cv.AddLine(entry, "Pinned line", Tag.AlwaysOnName);
+        var hidden = await cv.AddLine(entry, "Hidden line");
+        await database.Get<ILineFactory>().Update(hidden, new LineRequest { Text = "Hidden line", Override = LineOverride.Hidden });
+        await cv.AddLine(await cv.AddSection("Skills", SectionKind.Skills, tags: Tag.AlwaysOnName), "Pinned section line");
 
-        cv.Tailor("Anything");
+        await cv.Tailor("Anything");
 
         Assert.Equal([normal], ollama.Calls.Single());
     }
 
     [Fact]
-    public void Scores_AreCachedSoOnlyChangedLinesAreSent()
+    public async Task Scores_AreCachedSoOnlyChangedLinesAreSent()
     {
-        var (database, ollama) = CreateDatabase();
+        var (database, ollama) = await CreateDatabase();
         using var _ = database;
-        var cv = CreateCv(database);
-        var entry = cv.AddSection("Experience", SectionKind.Experience);
-        var first = cv.AddLine(entry, "First");
-        var second = cv.AddLine(entry, "Second");
+        var cv = await CreateCv(database);
+        var entry = await cv.AddSection("Experience", SectionKind.Experience);
+        var first = await cv.AddLine(entry, "First");
+        var second = await cv.AddLine(entry, "Second");
 
-        cv.Tailor("Same advert");
-        database.Get<ILineFactory>().Update(second, new LineRequest { Text = "Second, edited" });
-        cv.Tailor("Same advert");
-        cv.Tailor("A different advert");
+        await cv.Tailor("Same advert");
+        await database.Get<ILineFactory>().Update(second, new LineRequest { Text = "Second, edited" });
+        await cv.Tailor("Same advert");
+        await cv.Tailor("A different advert");
 
         Assert.Equal([first, second], ollama.Calls[0]);
         Assert.Equal([second], ollama.Calls[1]);
@@ -112,16 +112,16 @@ public class OllamaTailoringTests
     }
 
     [Fact]
-    public void Failures_FallBackToKeywordsWithANotice()
+    public async Task Failures_FallBackToKeywordsWithANotice()
     {
-        var (database, ollama) = CreateDatabase();
+        var (database, ollama) = await CreateDatabase();
         using var _ = database;
         ollama.Failure = new OllamaException("Ollama isn't answering at http://localhost:11434.");
-        var cv = CreateCv(database);
-        var entry = cv.AddSection("Experience", SectionKind.Experience);
-        var react = cv.AddLine(entry, "React work", "Frontend");
+        var cv = await CreateCv(database);
+        var entry = await cv.AddSection("Experience", SectionKind.Experience);
+        var react = await cv.AddLine(entry, "React work", "Frontend");
 
-        var result = cv.Tailor("React developer");
+        var result = await cv.Tailor("React developer");
 
         Assert.Equal(MatchingMode.Keyword, result.Mode);
         Assert.Equal("Ollama isn't answering at http://localhost:11434. Keyword matching was used instead.", result.Notice);
@@ -129,14 +129,14 @@ public class OllamaTailoringTests
     }
 
     [Fact]
-    public void MissingModel_UsesKeywordsWithANotice()
+    public async Task MissingModel_UsesKeywordsWithANotice()
     {
-        var (database, ollama) = CreateDatabase(model: "");
+        var (database, ollama) = await CreateDatabase(model: "");
         using var _ = database;
-        var cv = CreateCv(database);
-        cv.AddLine(cv.AddSection("Experience", SectionKind.Experience), "Line");
+        var cv = await CreateCv(database);
+        await cv.AddLine(await cv.AddSection("Experience", SectionKind.Experience), "Line");
 
-        var result = cv.Tailor("Anything");
+        var result = await cv.Tailor("Anything");
 
         Assert.Equal(MatchingMode.Keyword, result.Mode);
         Assert.Contains("No Ollama model", result.Notice);

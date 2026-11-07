@@ -8,11 +8,11 @@ public class SettingsFactoryTests
     private static ISettingsFactory CreateFactory(TestDatabase database) => database.Get<ISettingsFactory>();
 
     [Fact]
-    public void Get_ReturnsSeededDefaults()
+    public async Task Get_ReturnsSeededDefaults()
     {
         using var database = new TestDatabase();
 
-        var settings = CreateFactory(database).Get();
+        var settings = await CreateFactory(database).Get();
 
         Assert.Equal(MatchingMode.Keyword, settings.MatchingMode);
         Assert.Equal(AppSettings.DefaultOllamaUrl, settings.OllamaUrl);
@@ -21,19 +21,19 @@ public class SettingsFactoryTests
     }
 
     [Fact]
-    public void Update_PersistsValues()
+    public async Task Update_PersistsValues()
     {
         using var database = new TestDatabase();
         var factory = CreateFactory(database);
 
-        factory.Update(new AppSettings
+        await factory.Update(new AppSettings
         {
             MatchingMode = MatchingMode.Ollama,
             OllamaUrl = " http://localhost:9999 ",
             OllamaModel = "llama3.2",
             LastProfileId = 3,
         });
-        var settings = CreateFactory(database).Get();
+        var settings = await CreateFactory(database).Get();
 
         Assert.Equal(MatchingMode.Ollama, settings.MatchingMode);
         Assert.Equal("http://localhost:9999", settings.OllamaUrl);
@@ -48,7 +48,7 @@ public class SettingsFactoryTests
     {
         using var database = new TestDatabase();
 
-        var status = await CreateFactory(database).GetOllamaStatusAsync(url, CancellationToken.None);
+        var status = await CreateFactory(database).GetOllamaStatus(url, CancellationToken.None);
 
         Assert.False(status.Reachable);
         Assert.Contains("isn't a valid web address", status.Error);

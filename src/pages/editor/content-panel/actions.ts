@@ -11,7 +11,7 @@ export const useContentActions = () => {
             mutate(() => api.updateProfile(profileId, request), 'Could not save your details.'),
 
         createSection: (title: string, kind: SectionKind) =>
-            mutate(() => api.createSection({ profileId, title, kind, maxLines: 5, isHidden: false, priority: normalPriority }), 'Could not add the section.'),
+            mutate(() => api.createSection({ profileId, title, kind, maxLines: 5, maxTotal: 0, isHidden: false, priority: normalPriority }), 'Could not add the section.'),
         saveSection: (section: Section, changes: Partial<SectionRequest>) =>
             mutate(() => api.updateSection(section.id, { ...api.toSectionRequest(section), ...changes }), 'Could not save the section.'),
         deleteSection: (id: number) =>

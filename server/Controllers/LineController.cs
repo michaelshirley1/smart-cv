@@ -5,7 +5,7 @@ using SmartCv.Models;
 namespace SmartCv.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api")]
 public class LineController : ControllerBase
 {
     private readonly ILineFactory _lineFactory;
@@ -15,47 +15,93 @@ public class LineController : ControllerBase
         _lineFactory = lineFactory;
     }
 
-    [HttpPost]
+    [HttpPost("line", Name = "Line-Create")]
     [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Create([FromBody] CreateLineRequest request)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Create([FromBody] CreateLineRequest request)
     {
-        return _lineFactory.Create(request).ToActionResult(StatusCodes.Status201Created);
+        try
+        {
+            var create = await _lineFactory.Create(request);
+
+            return this.ToActionResult(create, StatusCodes.Status201Created);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpPut("{id:int}")]
+    [HttpPut("line/{id:int}", Name = "Line-Update")]
     [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Update(int id, [FromBody] LineRequest request)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] LineRequest request)
     {
-        return _lineFactory.Update(id, request).ToActionResult();
+        try
+        {
+            var update = await _lineFactory.Update(id, request);
+
+            return this.ToActionResult(update);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpDelete("{id:int}")]
+    [HttpDelete("line/{id:int}", Name = "Line-Delete")]
     [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Delete(int id)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete([FromRoute] int id)
     {
-        return _lineFactory.Delete(id).ToActionResult();
+        try
+        {
+            var delete = await _lineFactory.Delete(id);
+
+            return this.ToActionResult(delete);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpPut("reorder")]
+    [HttpPut("line/reorder", Name = "Line-Reorder")]
     [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Reorder([FromBody] ReorderRequest request)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Reorder([FromBody] ReorderRequest request)
     {
-        return _lineFactory.Reorder(request).ToActionResult();
+        try
+        {
+            var reorder = await _lineFactory.Reorder(request);
+
+            return this.ToActionResult(reorder);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpPut("{id:int}/tags")]
+    [HttpPut("line/{id:int}/tags", Name = "Line-SetTags")]
     [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult SetTags(int id, [FromBody] TagLinksRequest request)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetTags([FromRoute] int id, [FromBody] TagLinksRequest request)
     {
-        return _lineFactory.SetTags(id, request).ToActionResult();
+        try
+        {
+            var setTags = await _lineFactory.SetTags(id, request);
+
+            return this.ToActionResult(setTags);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

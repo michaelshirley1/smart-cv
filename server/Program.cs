@@ -13,7 +13,7 @@ public static class Program
         paths.EnsureCreated();
         var app = ServerSetup.Build(args, options, paths);
 
-        AppInitialiser.Run(app.Services);
+        AppInitialiser.Run(app.Services).GetAwaiter().GetResult();
 
         if (options.Mode == AppMode.Headless)
         {

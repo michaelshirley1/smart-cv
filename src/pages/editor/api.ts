@@ -47,6 +47,12 @@ export const restoreProfile = (id: number, snapshot: ProfileDetail) =>
 export const saveJobDescription = (id: number, jobDescription: string) =>
     client.put(`/profile/${id}/job-description`, { jobDescription });
 
+export const importCv = (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return client.post<ProfileDetail>('/import', form).then(r => r.data);
+};
+
 export const deleteProfile = (id: number) =>
     client.delete(`/profile/${id}`);
 
@@ -153,6 +159,7 @@ export const toSectionRequest = (section: Section): SectionRequest => ({
     title: section.title,
     kind: section.kind,
     maxLines: section.maxLines,
+    maxTotal: section.maxTotal,
     isHidden: section.isHidden,
     priority: section.priority,
 });

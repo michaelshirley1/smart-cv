@@ -6,7 +6,7 @@ namespace SmartCv.Repositories;
 
 public interface IDbConnectionFactory
 {
-    SqliteConnection Create();
+    Task<SqliteConnection> Create();
 }
 
 public class DbConnectionFactory : IDbConnectionFactory
@@ -28,10 +28,10 @@ public class DbConnectionFactory : IDbConnectionFactory
         }.ToString();
     }
 
-    public SqliteConnection Create()
+    public async Task<SqliteConnection> Create()
     {
         var connection = new SqliteConnection(_connectionString);
-        connection.Open();
+        await connection.OpenAsync();
         return connection;
     }
 }

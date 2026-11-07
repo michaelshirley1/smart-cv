@@ -4,7 +4,7 @@ namespace SmartCv.Factories;
 
 public interface IFontFactory
 {
-    IEnumerable<string> GetAll();
+    Task<IEnumerable<string>> GetAll();
 }
 
 public class FontFactory : IFontFactory
@@ -16,11 +16,11 @@ public class FontFactory : IFontFactory
         _fontService = fontService;
     }
 
-    public IEnumerable<string> GetAll() =>
-        _fontService.GetInstalledFamilies()
+    public Task<IEnumerable<string>> GetAll() =>
+        Task.FromResult<IEnumerable<string>>(_fontService.GetInstalledFamilies()
             .Select(family => family.Trim())
             .Where(family => family.Length > 0 && !family.StartsWith('@'))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Order(StringComparer.OrdinalIgnoreCase)
-            .ToList();
+            .ToList());
 }

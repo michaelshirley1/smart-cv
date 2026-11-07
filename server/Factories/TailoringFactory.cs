@@ -5,7 +5,7 @@ namespace SmartCv.Factories;
 
 public interface ITailoringFactory
 {
-    Task<FactoryResult<TailorResult>> TailorAsync(TailorRequest request, CancellationToken cancellationToken);
+    Task<FactoryResult<TailorResult>> Tailor(TailorRequest request, CancellationToken cancellationToken);
 }
 
 public class TailoringFactory : ITailoringFactory
@@ -17,7 +17,12 @@ public class TailoringFactory : ITailoringFactory
     private readonly IOllamaService _ollama;
     private readonly IOllamaScoreCache _scoreCache;
 
-    public TailoringFactory(IProfileFactory profileFactory, ISettingsFactory settingsFactory, IOllamaService ollama, IOllamaScoreCache scoreCache)
+    public TailoringFactory(
+        IProfileFactory profileFactory,
+        ISettingsFactory settingsFactory,
+        IOllamaService ollama,
+        IOllamaScoreCache scoreCache
+    )
     {
         _profileFactory = profileFactory;
         _settingsFactory = settingsFactory;
@@ -25,9 +30,9 @@ public class TailoringFactory : ITailoringFactory
         _scoreCache = scoreCache;
     }
 
-    public async Task<FactoryResult<TailorResult>> TailorAsync(TailorRequest request, CancellationToken cancellationToken)
+    public async Task<FactoryResult<TailorResult>> Tailor(TailorRequest request, CancellationToken cancellationToken)
     {
-        var profileResult = _profileFactory.GetById(request.ProfileId);
+        var profileResult = await _profileFactory.GetById(request.ProfileId);
         if (profileResult.Value is null) return FactoryResult<TailorResult>.NotFound(profileResult.Error);
 
         var profile = profileResult.Value;
@@ -51,7 +56,7 @@ public class TailoringFactory : ITailoringFactory
             Mode = MatchingMode.Keyword,
             MatchedTags = matches,
         };
-        var modelScores = byTags ? null : await ModelScoresAsync(profile, request.JobDescription, alwaysOnId, result, cancellationToken);
+        var modelScores = byTags ? null : await ModelScores(profile, request.JobDescription, alwaysOnId, result, cancellationToken);
 
         foreach (var section in profile.Sections)
         {
@@ -59,10 +64,11 @@ public class TailoringFactory : ITailoringFactory
             var included = decision is SectionDecision.AlwaysOn or SectionDecision.Untagged or SectionDecision.Matched;
             result.Sections.Add(new SectionResult { SectionId = section.Id, Included = included, Decision = decision });
 
-            foreach (var entry in section.Entries)
-            {
-                result.Lines.AddRange(DecideLines(section, entry, included, decision == SectionDecision.AlwaysOn, alwaysOnId, tagScores, modelScores));
-            }
+            var sectionLines = section.Entries
+                .SelectMany(entry => DecideLines(section, entry, included, decision == SectionDecision.AlwaysOn, alwaysOnId, tagScores, modelScores))
+                .ToList();
+            ApplySectionLimit(sectionLines, section.MaxTotal);
+            result.Lines.AddRange(sectionLines);
         }
 
         result.TrimOrder = TrimOrder(result.Lines, profile.Sections.ToDictionary(section => section.Id, section => section.Priority));
@@ -81,9 +87,9 @@ public class TailoringFactory : ITailoringFactory
             .ThenBy(match => match.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-    private async Task<Dictionary<int, int>?> ModelScoresAsync(ProfileDetail profile, string jobDescription, int? alwaysOnId, TailorResult result, CancellationToken cancellationToken)
+    private async Task<Dictionary<int, int>?> ModelScores(ProfileDetail profile, string jobDescription, int? alwaysOnId, TailorResult result, CancellationToken cancellationToken)
     {
-        var settings = _settingsFactory.Get();
+        var settings = await _settingsFactory.Get();
         if (settings.MatchingMode != MatchingMode.Ollama) return null;
 
         if (string.IsNullOrWhiteSpace(settings.OllamaModel))
@@ -188,7 +194,7 @@ public class TailoringFactory : ITailoringFactory
 
         if (!sectionIncluded) return lines;
 
-        var slots = Math.Max(0, section.MaxLines - lines.Count(line => line.Decision == LineDecision.AlwaysOn));
+        var slots = section.MaxLines == 0 ? int.MaxValue : Math.Max(0, section.MaxLines - lines.Count(line => line.Decision == LineDecision.AlwaysOn));
         var candidates = lines.Where(line => line.Decision == LineDecision.Matched)
             .OrderByDescending(line => line.Priority)
             .ThenByDescending(line => line.Score)
@@ -220,6 +226,33 @@ public class TailoringFactory : ITailoringFactory
         }
 
         return lines;
+    }
+
+    private static void ApplySectionLimit(List<LineResult> lines, int maxTotal)
+    {
+        if (maxTotal <= 0) return;
+
+        var position = lines.Select((line, index) => (line.LineId, index)).ToDictionary(pair => pair.LineId, pair => pair.index);
+        var remaining = lines.Where(line => line.Included).GroupBy(line => line.EntryId).ToDictionary(group => group.Key, group => group.Count());
+        var excess = lines.Count(line => line.Included) - maxTotal;
+
+        var candidates = lines
+            .Where(line => line.Included && line.Decision != LineDecision.AlwaysOn)
+            .OrderBy(line => line.Priority)
+            .ThenBy(line => line.Decision == LineDecision.Matched)
+            .ThenBy(line => line.Decision == LineDecision.Matched ? line.Score : 0)
+            .ThenByDescending(line => position[line.LineId])
+            .ToList();
+
+        foreach (var line in candidates)
+        {
+            if (excess <= 0) break;
+            if (remaining[line.EntryId] <= 1) continue;
+            line.Included = false;
+            line.Decision = LineDecision.OverLimit;
+            remaining[line.EntryId]--;
+            excess--;
+        }
     }
 
     private static List<int> TrimOrder(List<LineResult> lines, IReadOnlyDictionary<int, int> sectionPriorities)

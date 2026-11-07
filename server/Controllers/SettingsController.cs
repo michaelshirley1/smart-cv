@@ -5,7 +5,7 @@ using SmartCv.Models;
 namespace SmartCv.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api")]
 public class SettingsController : ControllerBase
 {
     private readonly ISettingsFactory _settingsFactory;
@@ -15,25 +15,54 @@ public class SettingsController : ControllerBase
         _settingsFactory = settingsFactory;
     }
 
-    [HttpGet]
-    [ProducesResponseType(typeof(AppSettings), StatusCodes.Status200OK)]
-    public IActionResult Get()
-    {
-        return Ok(_settingsFactory.Get());
-    }
-
-    [HttpPut]
+    [HttpGet("settings", Name = "Settings-Fetch")]
     [ProducesResponseType(typeof(AppSettings), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public IActionResult Update([FromBody] AppSettings settings)
+    public async Task<IActionResult> Fetch()
     {
-        return Ok(_settingsFactory.Update(settings));
+        try
+        {
+            var fetch = await _settingsFactory.Get();
+
+            return Ok(fetch);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpGet("ollama")]
-    [ProducesResponseType(typeof(OllamaStatus), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetOllamaStatus([FromQuery] string? url, CancellationToken cancellationToken)
+    [HttpPut("settings", Name = "Settings-Update")]
+    [ProducesResponseType(typeof(AppSettings), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Update([FromBody] AppSettings settings)
     {
-        return Ok(await _settingsFactory.GetOllamaStatusAsync(url, cancellationToken));
+        try
+        {
+            var update = await _settingsFactory.Update(settings);
+
+            return Ok(update);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("settings/ollama", Name = "Settings-FetchOllamaStatus")]
+    [ProducesResponseType(typeof(OllamaStatus), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> FetchOllamaStatus([FromQuery] string? url, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var fetchOllamaStatus = await _settingsFactory.GetOllamaStatus(url, cancellationToken);
+
+            return Ok(fetchOllamaStatus);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

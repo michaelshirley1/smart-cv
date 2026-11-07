@@ -7,7 +7,7 @@ const lineLabels: Record<LineDecision, string | null> = {
     untagged: 'Included, untagged',
     fallback: 'Kept as the entry\'s best line',
     unmatched: 'Not relevant to this job',
-    overLimit: 'Over the max lines',
+    overLimit: 'Over a line limit',
     hidden: null,
     sectionExcluded: 'Section left out',
 };

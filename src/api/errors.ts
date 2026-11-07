@@ -1,16 +1,17 @@
 import axios from 'axios';
 
 interface ApiError {
-    message?: string;
+    detail?: string;
     title?: string;
     errors?: Record<string, string[]>;
 }
 
 export function getErrorMessage(error: unknown, fallback: string): string {
-    if (!axios.isAxiosError<ApiError>(error)) return fallback;
+    if (!axios.isAxiosError<ApiError | string>(error)) return fallback;
 
     const data = error.response?.data;
-    if (data?.message) return data.message;
+    if (typeof data === 'string') return data.trim() || fallback;
+    if (data?.detail) return data.detail;
 
     const firstValidationError = data?.errors ? Object.values(data.errors).flat()[0] : undefined;
     return firstValidationError ?? data?.title ?? fallback;

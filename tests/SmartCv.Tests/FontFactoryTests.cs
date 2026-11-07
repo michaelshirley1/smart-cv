@@ -11,11 +11,11 @@ public class FontFactoryTests
     }
 
     [Fact]
-    public void GetAll_SortsRemovesDuplicatesAndVerticalFonts()
+    public async Task GetAll_SortsRemovesDuplicatesAndVerticalFonts()
     {
         var factory = new FontFactory(new FakeFontService("Garamond", "arial", "@MS Gothic", "Arial", " ", "Calibri"));
 
-        Assert.Equal(["arial", "Calibri", "Garamond"], factory.GetAll());
+        Assert.Equal(["arial", "Calibri", "Garamond"], await factory.GetAll());
     }
 
     [Fact]

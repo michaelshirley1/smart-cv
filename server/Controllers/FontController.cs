@@ -4,7 +4,7 @@ using SmartCv.Factories;
 namespace SmartCv.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api")]
 public class FontController : ControllerBase
 {
     private readonly IFontFactory _fontFactory;
@@ -14,10 +14,20 @@ public class FontController : ControllerBase
         _fontFactory = fontFactory;
     }
 
-    [HttpGet]
+    [HttpGet("font", Name = "Font-FetchAll")]
     [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
-    public IActionResult GetAll()
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> FetchAll()
     {
-        return Ok(_fontFactory.GetAll());
+        try
+        {
+            var fetchAll = await _fontFactory.GetAll();
+
+            return Ok(fetchAll);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

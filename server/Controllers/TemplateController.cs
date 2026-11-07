@@ -5,7 +5,7 @@ using SmartCv.Models;
 namespace SmartCv.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api")]
 public class TemplateController : ControllerBase
 {
     private readonly ITemplateFactory _templateFactory;
@@ -15,44 +15,91 @@ public class TemplateController : ControllerBase
         _templateFactory = templateFactory;
     }
 
-    [HttpGet]
+    [HttpGet("template", Name = "Template-FetchAll")]
     [ProducesResponseType(typeof(IEnumerable<TemplateSummary>), StatusCodes.Status200OK)]
-    public IActionResult GetAll()
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> FetchAll()
     {
-        return Ok(_templateFactory.GetAll());
+        try
+        {
+            var fetchAll = await _templateFactory.GetAll();
+
+            return Ok(fetchAll);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpGet("{name}")]
+    [HttpGet("template/{name}", Name = "Template-Fetch")]
     [ProducesResponseType(typeof(Template), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult GetByName(string name)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Fetch([FromRoute] string name)
     {
-        return _templateFactory.GetByName(name).ToActionResult();
+        try
+        {
+            var fetch = await _templateFactory.GetByName(name);
+
+            return this.ToActionResult(fetch);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpPost]
+    [HttpPost("template", Name = "Template-Create")]
     [ProducesResponseType(typeof(Template), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    public IActionResult Create([FromBody] TemplateRequest request)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Create([FromBody] TemplateRequest request)
     {
-        return _templateFactory.Create(request).ToActionResult(StatusCodes.Status201Created);
+        try
+        {
+            var create = await _templateFactory.Create(request);
+
+            return this.ToActionResult(create, StatusCodes.Status201Created);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpPut("{name}")]
+    [HttpPut("template/{name}", Name = "Template-Update")]
     [ProducesResponseType(typeof(Template), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Update(string name, [FromBody] TemplateRequest request)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Update([FromRoute] string name, [FromBody] TemplateRequest request)
     {
-        return _templateFactory.Update(name, request).ToActionResult();
+        try
+        {
+            var update = await _templateFactory.Update(name, request);
+
+            return this.ToActionResult(update);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpDelete("{name}")]
+    [HttpDelete("template/{name}", Name = "Template-Delete")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Delete(string name)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete([FromRoute] string name)
     {
-        return _templateFactory.Delete(name).ToActionResult();
+        try
+        {
+            var delete = await _templateFactory.Delete(name);
+
+            return this.ToActionResult(delete);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

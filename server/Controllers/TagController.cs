@@ -5,7 +5,7 @@ using SmartCv.Models;
 namespace SmartCv.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api")]
 public class TagController : ControllerBase
 {
     private readonly ITagFactory _tagFactory;
@@ -15,38 +15,75 @@ public class TagController : ControllerBase
         _tagFactory = tagFactory;
     }
 
-    [HttpGet]
+    [HttpGet("tag", Name = "Tag-FetchByProfile")]
     [ProducesResponseType(typeof(List<Tag>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult GetByProfileId([FromQuery] int profileId)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> FetchByProfile([FromQuery] int profileId)
     {
-        return _tagFactory.GetByProfileId(profileId).ToActionResult();
+        try
+        {
+            var fetchByProfile = await _tagFactory.GetByProfileId(profileId);
+
+            return this.ToActionResult(fetchByProfile);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpPost]
+    [HttpPost("tag", Name = "Tag-Create")]
     [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Create([FromBody] CreateTagRequest request)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Create([FromBody] CreateTagRequest request)
     {
-        return _tagFactory.Create(request).ToActionResult(StatusCodes.Status201Created);
+        try
+        {
+            var create = await _tagFactory.Create(request);
+
+            return this.ToActionResult(create, StatusCodes.Status201Created);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpPut("{id:int}")]
+    [HttpPut("tag/{id:int}", Name = "Tag-Update")]
     [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Update(int id, [FromBody] TagRequest request)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] TagRequest request)
     {
-        return _tagFactory.Update(id, request).ToActionResult();
+        try
+        {
+            var update = await _tagFactory.Update(id, request);
+
+            return this.ToActionResult(update);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpDelete("{id:int}")]
+    [HttpDelete("tag/{id:int}", Name = "Tag-Delete")]
     [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Delete(int id)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete([FromRoute] int id)
     {
-        return _tagFactory.Delete(id).ToActionResult();
+        try
+        {
+            var delete = await _tagFactory.Delete(id);
+
+            return this.ToActionResult(delete);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

@@ -16,6 +16,7 @@ export interface ProfileContextValue {
     renameProfile: (name: string) => Promise<void>;
     duplicateProfile: () => Promise<void>;
     deleteProfile: () => Promise<void>;
+    importProfile: (file: File) => Promise<void>;
     mutate: (action: () => Promise<ProfileDetail>, fallback: string) => Promise<ProfileDetail | null>;
     attempt: (action: () => Promise<void>, fallback: string) => Promise<void>;
     reloadProfile: () => Promise<void>;

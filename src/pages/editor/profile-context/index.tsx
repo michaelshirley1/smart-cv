@@ -109,6 +109,9 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
             await open(remaining.length > 0 ? await api.getProfile(remaining[0].id) : await createDefault());
         }, 'Could not delete the profile.');
 
+    const importProfile = (file: File) =>
+        run(async () => open(await api.importCv(file)), 'Could not import that CV.');
+
     const step = async (from: HistoryStack) => {
         const snapshot = history.current[from].at(-1);
         if (!profile || !snapshot || stepping.current) return;
@@ -136,6 +139,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
         renameProfile,
         duplicateProfile,
         deleteProfile,
+        importProfile,
         mutate: async (action, fallback) => {
             const before = profile;
             let updated: ProfileDetail | null = null;

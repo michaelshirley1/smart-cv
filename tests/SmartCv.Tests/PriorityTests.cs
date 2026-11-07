@@ -8,35 +8,35 @@ namespace SmartCv.Tests;
 
 public class PriorityTests
 {
-    private static void SetLinePriority(TestDatabase database, int lineId, int priority)
+    private static async Task SetLinePriority(TestDatabase database, int lineId, int priority)
     {
-        var line = database.Get<ILineRepository>().GetById(lineId)!;
-        database.Get<ILineFactory>().Update(lineId, new LineRequest { Text = line.Text, Override = line.Override, Priority = priority });
+        var line = (await database.Get<ILineRepository>().GetById(lineId))!;
+        await database.Get<ILineFactory>().Update(lineId, new LineRequest { Text = line.Text, Override = line.Override, Priority = priority });
     }
 
-    private static void SetSectionPriority(TestDatabase database, int sectionId, int priority)
+    private static async Task SetSectionPriority(TestDatabase database, int sectionId, int priority)
     {
-        var section = database.Get<ISectionRepository>().GetById(sectionId)!;
-        database.Get<ISectionFactory>().Update(sectionId, new SectionRequest { Title = section.Title, Kind = section.Kind, MaxLines = section.MaxLines, Priority = priority });
+        var section = (await database.Get<ISectionRepository>().GetById(sectionId))!;
+        await database.Get<ISectionFactory>().Update(sectionId, new SectionRequest { Title = section.Title, Kind = section.Kind, MaxLines = section.MaxLines, Priority = priority });
     }
 
     [Fact]
-    public void Priority_IsSavedAndDefaultsToNormal()
+    public async Task Priority_IsSavedAndDefaultsToNormal()
     {
         using var database = new TestDatabase();
-        var cv = CreateCv(database);
-        var entry = cv.AddSection("Experience", SectionKind.Experience);
-        var line = cv.AddLine(entry, "A line");
+        var cv = await CreateCv(database);
+        var entry = await cv.AddSection("Experience", SectionKind.Experience);
+        var line = await cv.AddLine(entry, "A line");
 
-        Assert.Equal(Priorities.Normal, cv.Profile.Sections[0].Priority);
-        Assert.Equal(Priorities.Normal, cv.Profile.Sections[0].Entries[0].Lines[0].Priority);
+        Assert.Equal(Priorities.Normal, (await cv.Profile()).Sections[0].Priority);
+        Assert.Equal(Priorities.Normal, (await cv.Profile()).Sections[0].Entries[0].Lines[0].Priority);
 
-        SetLinePriority(database, line, Priorities.Highest);
-        SetSectionPriority(database, cv.Profile.Sections[0].Id, Priorities.Lowest);
+        await SetLinePriority(database, line, Priorities.Highest);
+        await SetSectionPriority(database, (await cv.Profile()).Sections[0].Id, Priorities.Lowest);
 
-        Assert.Equal(Priorities.Highest, cv.Profile.Sections[0].Entries[0].Lines[0].Priority);
-        Assert.Equal(Priorities.Lowest, cv.Profile.Sections[0].Priority);
-        Assert.Equal(Priorities.Highest, database.Get<IProfileFactory>().Duplicate(cv.ProfileId).Value!.Sections[0].Entries[0].Lines[0].Priority);
+        Assert.Equal(Priorities.Highest, (await cv.Profile()).Sections[0].Entries[0].Lines[0].Priority);
+        Assert.Equal(Priorities.Lowest, (await cv.Profile()).Sections[0].Priority);
+        Assert.Equal(Priorities.Highest, (await database.Get<IProfileFactory>().Duplicate(cv.ProfileId)).Value!.Sections[0].Entries[0].Lines[0].Priority);
     }
 
     [Fact]
@@ -51,19 +51,19 @@ public class PriorityTests
     }
 
     [Fact]
-    public void HigherPriority_WinsTheSlotsOverAHigherScore()
+    public async Task HigherPriority_WinsTheSlotsOverAHigherScore()
     {
         using var database = new TestDatabase();
-        var cv = CreateCv(database);
-        var entry = cv.AddSection("Experience", SectionKind.Experience, maxLines: 2);
-        var strong = cv.AddLine(entry, "Strong match", "Frontend", "Backend");
-        var weakButImportant = cv.AddLine(entry, "Weak match", "Frontend");
-        var middle = cv.AddLine(entry, "Middle match", "Backend");
-        var irrelevant = cv.AddLine(entry, "Data only", "Data");
-        SetLinePriority(database, weakButImportant, Priorities.Highest);
-        SetLinePriority(database, irrelevant, Priorities.Highest);
+        var cv = await CreateCv(database);
+        var entry = await cv.AddSection("Experience", SectionKind.Experience, maxLines: 2);
+        var strong = await cv.AddLine(entry, "Strong match", "Frontend", "Backend");
+        var weakButImportant = await cv.AddLine(entry, "Weak match", "Frontend");
+        var middle = await cv.AddLine(entry, "Middle match", "Backend");
+        var irrelevant = await cv.AddLine(entry, "Data only", "Data");
+        await SetLinePriority(database, weakButImportant, Priorities.Highest);
+        await SetLinePriority(database, irrelevant, Priorities.Highest);
 
-        var result = cv.Tailor("React and C# and SQL");
+        var result = await cv.Tailor("React and C# and SQL");
 
         Assert.True(Line(result, weakButImportant).Included);
         Assert.True(Line(result, strong).Included);
@@ -73,22 +73,22 @@ public class PriorityTests
     }
 
     [Fact]
-    public void TrimOrder_FollowsSectionThenLinePriority()
+    public async Task TrimOrder_FollowsSectionThenLinePriority()
     {
         using var database = new TestDatabase();
-        var cv = CreateCv(database);
-        var workEntry = cv.AddSection("Experience", SectionKind.Experience);
-        var workA = cv.AddLine(workEntry, "Work A", "Frontend");
-        var workB = cv.AddLine(workEntry, "Work B", "Frontend");
-        var workC = cv.AddLine(workEntry, "Work C", "Frontend");
-        var skillsEntry = cv.AddSection("Skills", SectionKind.Skills);
-        var skillA = cv.AddLine(skillsEntry, "Skill A", "Frontend", "Backend");
-        var skillB = cv.AddLine(skillsEntry, "Skill B", "Frontend", "Backend");
-        SetSectionPriority(database, cv.Profile.Sections.Single(s => s.Title == "Skills").Id, Priorities.Lowest);
-        SetLinePriority(database, workA, 4);
-        SetLinePriority(database, workC, 2);
+        var cv = await CreateCv(database);
+        var workEntry = await cv.AddSection("Experience", SectionKind.Experience);
+        var workA = await cv.AddLine(workEntry, "Work A", "Frontend");
+        var workB = await cv.AddLine(workEntry, "Work B", "Frontend");
+        var workC = await cv.AddLine(workEntry, "Work C", "Frontend");
+        var skillsEntry = await cv.AddSection("Skills", SectionKind.Skills);
+        var skillA = await cv.AddLine(skillsEntry, "Skill A", "Frontend", "Backend");
+        var skillB = await cv.AddLine(skillsEntry, "Skill B", "Frontend", "Backend");
+        await SetSectionPriority(database, (await cv.Profile()).Sections.Single(s => s.Title == "Skills").Id, Priorities.Lowest);
+        await SetLinePriority(database, workA, 4);
+        await SetLinePriority(database, workC, 2);
 
-        var result = cv.Tailor("React and C#");
+        var result = await cv.Tailor("React and C#");
 
         Assert.Equal([skillB, workC, workB], result.TrimOrder);
         Assert.DoesNotContain(workA, result.TrimOrder);
@@ -96,20 +96,20 @@ public class PriorityTests
     }
 
     [Fact]
-    public void Schema_AddsPriorityColumnsToOlderDatabases()
+    public async Task Schema_AddsPriorityColumnsToOlderDatabases()
     {
         using var database = new TestDatabase();
-        using (var connection = database.Connections.Create())
+        using (var connection = await database.Connections.Create())
         {
             connection.Execute("ALTER TABLE Lines DROP COLUMN Priority");
             connection.Execute("ALTER TABLE Sections DROP COLUMN Priority");
         }
 
-        database.Get<ISchemaRepository>().EnsureCreated();
-        var cv = CreateCv(database);
-        cv.AddLine(cv.AddSection("Experience", SectionKind.Experience), "Line");
+        await database.Get<ISchemaRepository>().EnsureCreated();
+        var cv = await CreateCv(database);
+        await cv.AddLine(await cv.AddSection("Experience", SectionKind.Experience), "Line");
 
-        Assert.Equal(Priorities.Normal, cv.Profile.Sections[0].Priority);
-        Assert.Equal(Priorities.Normal, cv.Profile.Sections[0].Entries[0].Lines[0].Priority);
+        Assert.Equal(Priorities.Normal, (await cv.Profile()).Sections[0].Priority);
+        Assert.Equal(Priorities.Normal, (await cv.Profile()).Sections[0].Entries[0].Lines[0].Priority);
     }
 }

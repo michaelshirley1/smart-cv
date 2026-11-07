@@ -31,9 +31,13 @@ public static class ServerSetup
         app.UseExceptionHandler(error => error.Run(async context =>
         {
             var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
-            var message = exception is RepositoryException ? exception.Message : "Something went wrong.";
+            var detail = exception is RepositoryException ? exception.Message : "Something went wrong.";
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            await context.Response.WriteAsJsonAsync(new { message });
+            await context.RequestServices.GetRequiredService<IProblemDetailsService>().WriteAsync(new ProblemDetailsContext
+            {
+                HttpContext = context,
+                ProblemDetails = { Status = StatusCodes.Status500InternalServerError, Detail = detail },
+            });
         }));
 
         if (app.Environment.IsDevelopment())

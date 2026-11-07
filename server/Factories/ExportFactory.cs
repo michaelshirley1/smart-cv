@@ -6,8 +6,8 @@ namespace SmartCv.Factories;
 
 public interface IExportFactory
 {
-    Task<FactoryResult<ExportResult>> ExportPdfAsync(ExportRequest request, CancellationToken cancellationToken);
-    FactoryResult<PrintJob> GetPrintJob(string id);
+    Task<FactoryResult<ExportResult>> ExportPdf(ExportRequest request, CancellationToken cancellationToken);
+    Task<FactoryResult<PrintJob>> GetPrintJob(string id);
 }
 
 public class ExportFactory : IExportFactory
@@ -35,9 +35,9 @@ public class ExportFactory : IExportFactory
         _client = client;
     }
 
-    public async Task<FactoryResult<ExportResult>> ExportPdfAsync(ExportRequest request, CancellationToken cancellationToken)
+    public async Task<FactoryResult<ExportResult>> ExportPdf(ExportRequest request, CancellationToken cancellationToken)
     {
-        var profileResult = _profileFactory.GetById(request.ProfileId);
+        var profileResult = await _profileFactory.GetById(request.ProfileId);
         if (profileResult.Value is null) return FactoryResult<ExportResult>.NotFound(profileResult.Error);
 
         var profile = profileResult.Value;
@@ -66,12 +66,12 @@ public class ExportFactory : IExportFactory
         return FactoryResult<ExportResult>.Success(new ExportResult { Saved = true, Path = path });
     }
 
-    public FactoryResult<PrintJob> GetPrintJob(string id)
+    public Task<FactoryResult<PrintJob>> GetPrintJob(string id)
     {
         var job = _printJobs.Get(id);
-        return job is null
+        return Task.FromResult(job is null
             ? FactoryResult<PrintJob>.NotFound("That export has expired.")
-            : FactoryResult<PrintJob>.Success(job);
+            : FactoryResult<PrintJob>.Success(job));
     }
 
     private PageSetup PageSetupFor(string templateName)

@@ -6,11 +6,11 @@ namespace SmartCv.Tests;
 public class ProfileFactoryTests
 {
     [Fact]
-    public void Create_UsesDefaultTemplateAndAddsAlwaysOnTag()
+    public async Task Create_UsesDefaultTemplateAndAddsAlwaysOnTag()
     {
         using var database = new TestDatabase();
 
-        var profile = database.CreateProfile();
+        var profile = await database.CreateProfile();
 
         Assert.Equal(TemplateSummary.DefaultName, profile.TemplateName);
         Assert.Equal(1, profile.TargetPages);
@@ -21,22 +21,22 @@ public class ProfileFactoryTests
     }
 
     [Fact]
-    public void Create_RejectsMissingTemplate()
+    public async Task Create_RejectsMissingTemplate()
     {
         using var database = new TestDatabase();
 
-        var result = database.Get<IProfileFactory>().Create(new ProfileRequest { Name = "Engineering", TemplateName = "missing" });
+        var result = await database.Get<IProfileFactory>().Create(new ProfileRequest { Name = "Engineering", TemplateName = "missing" });
 
         Assert.Equal(FactoryStatus.Invalid, result.Status);
     }
 
     [Fact]
-    public void Update_SavesContactDetailsAndLinks()
+    public async Task Update_SavesContactDetailsAndLinks()
     {
         using var database = new TestDatabase();
-        var profile = database.CreateProfile();
+        var profile = await database.CreateProfile();
 
-        var result = database.Get<IProfileFactory>().Update(profile.Id, new ProfileRequest
+        var result = await database.Get<IProfileFactory>().Update(profile.Id, new ProfileRequest
         {
             Name = " Backend ",
             TemplateName = "modern",
@@ -47,7 +47,7 @@ public class ProfileFactoryTests
         });
 
         Assert.Equal(FactoryStatus.Success, result.Status);
-        var updated = database.Get<IProfileFactory>().GetById(profile.Id).Value!;
+        var updated = (await database.Get<IProfileFactory>().GetById(profile.Id)).Value!;
         Assert.Equal("Backend", updated.Name);
         Assert.Equal("modern", updated.TemplateName);
         Assert.Equal(2, updated.TargetPages);
@@ -56,16 +56,16 @@ public class ProfileFactoryTests
     }
 
     [Fact]
-    public void GetById_AssemblesTheFullTree()
+    public async Task GetById_AssemblesTheFullTree()
     {
         using var database = new TestDatabase();
-        var profile = database.CreateProfile();
-        profile = database.AddTag(profile.Id, "Backend", "C#", "sql");
+        var profile = await database.CreateProfile();
+        profile = await database.AddTag(profile.Id, "Backend", "C#", "sql");
         var tag = profile.Tags.Single(t => t.Name == "Backend");
-        profile = database.AddSection(profile.Id);
+        profile = await database.AddSection(profile.Id);
         var entry = profile.Sections.Single().Entries.Single();
-        database.AddLine(entry.Id, "Built the **sync service**", tag.Id);
-        profile = database.AddLine(entry.Id, "Cut load time by 50%");
+        await database.AddLine(entry.Id, "Built the **sync service**", tag.Id);
+        profile = await database.AddLine(entry.Id, "Cut load time by 50%");
 
         var section = Assert.Single(profile.Sections);
         Assert.Equal(SectionKind.Experience, section.Kind);
@@ -78,17 +78,17 @@ public class ProfileFactoryTests
     }
 
     [Fact]
-    public void Duplicate_CopiesEverythingWithNewIds()
+    public async Task Duplicate_CopiesEverythingWithNewIds()
     {
         using var database = new TestDatabase();
-        var profile = database.CreateProfile();
-        profile = database.AddTag(profile.Id, "Frontend", "react");
+        var profile = await database.CreateProfile();
+        profile = await database.AddTag(profile.Id, "Frontend", "react");
         var tag = profile.Tags.Single(t => t.Name == "Frontend");
-        profile = database.AddSection(profile.Id);
-        database.Get<ISectionFactory>().SetTags(profile.Sections[0].Id, new TagLinksRequest { TagIds = [tag.Id] });
-        database.AddLine(profile.Sections[0].Entries[0].Id, "Built a design system", tag.Id);
+        profile = await database.AddSection(profile.Id);
+        await database.Get<ISectionFactory>().SetTags(profile.Sections[0].Id, new TagLinksRequest { TagIds = [tag.Id] });
+        await database.AddLine(profile.Sections[0].Entries[0].Id, "Built a design system", tag.Id);
 
-        var result = database.Get<IProfileFactory>().Duplicate(profile.Id);
+        var result = await database.Get<IProfileFactory>().Duplicate(profile.Id);
 
         Assert.Equal(FactoryStatus.Success, result.Status);
         var copy = result.Value!;
@@ -104,17 +104,17 @@ public class ProfileFactoryTests
     }
 
     [Fact]
-    public void Delete_RemovesProfileAndChildren()
+    public async Task Delete_RemovesProfileAndChildren()
     {
         using var database = new TestDatabase();
-        var profile = database.CreateProfile();
-        profile = database.AddSection(profile.Id);
-        database.AddLine(profile.Sections[0].Entries[0].Id, "A line");
+        var profile = await database.CreateProfile();
+        profile = await database.AddSection(profile.Id);
+        await database.AddLine(profile.Sections[0].Entries[0].Id, "A line");
 
-        var result = database.Get<IProfileFactory>().Delete(profile.Id);
+        var result = await database.Get<IProfileFactory>().Delete(profile.Id);
 
         Assert.Equal(FactoryStatus.Success, result.Status);
-        Assert.Equal(FactoryStatus.NotFound, database.Get<IProfileFactory>().GetById(profile.Id).Status);
-        Assert.Equal(FactoryStatus.NotFound, database.Get<IProfileFactory>().Delete(profile.Id).Status);
+        Assert.Equal(FactoryStatus.NotFound, (await database.Get<IProfileFactory>().GetById(profile.Id)).Status);
+        Assert.Equal(FactoryStatus.NotFound, (await database.Get<IProfileFactory>().Delete(profile.Id)).Status);
     }
 }

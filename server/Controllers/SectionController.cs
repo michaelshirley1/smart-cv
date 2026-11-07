@@ -5,7 +5,7 @@ using SmartCv.Models;
 namespace SmartCv.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api")]
 public class SectionController : ControllerBase
 {
     private readonly ISectionFactory _sectionFactory;
@@ -15,47 +15,93 @@ public class SectionController : ControllerBase
         _sectionFactory = sectionFactory;
     }
 
-    [HttpPost]
+    [HttpPost("section", Name = "Section-Create")]
     [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Create([FromBody] CreateSectionRequest request)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Create([FromBody] CreateSectionRequest request)
     {
-        return _sectionFactory.Create(request).ToActionResult(StatusCodes.Status201Created);
+        try
+        {
+            var create = await _sectionFactory.Create(request);
+
+            return this.ToActionResult(create, StatusCodes.Status201Created);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpPut("{id:int}")]
+    [HttpPut("section/{id:int}", Name = "Section-Update")]
     [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Update(int id, [FromBody] SectionRequest request)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] SectionRequest request)
     {
-        return _sectionFactory.Update(id, request).ToActionResult();
+        try
+        {
+            var update = await _sectionFactory.Update(id, request);
+
+            return this.ToActionResult(update);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpDelete("{id:int}")]
+    [HttpDelete("section/{id:int}", Name = "Section-Delete")]
     [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Delete(int id)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete([FromRoute] int id)
     {
-        return _sectionFactory.Delete(id).ToActionResult();
+        try
+        {
+            var delete = await _sectionFactory.Delete(id);
+
+            return this.ToActionResult(delete);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpPut("reorder")]
+    [HttpPut("section/reorder", Name = "Section-Reorder")]
     [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Reorder([FromBody] ReorderRequest request)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Reorder([FromBody] ReorderRequest request)
     {
-        return _sectionFactory.Reorder(request).ToActionResult();
+        try
+        {
+            var reorder = await _sectionFactory.Reorder(request);
+
+            return this.ToActionResult(reorder);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpPut("{id:int}/tags")]
+    [HttpPut("section/{id:int}/tags", Name = "Section-SetTags")]
     [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult SetTags(int id, [FromBody] TagLinksRequest request)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SetTags([FromRoute] int id, [FromBody] TagLinksRequest request)
     {
-        return _sectionFactory.SetTags(id, request).ToActionResult();
+        try
+        {
+            var setTags = await _sectionFactory.SetTags(id, request);
+
+            return this.ToActionResult(setTags);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

@@ -6,8 +6,8 @@ namespace SmartCv.Repositories;
 
 public interface ISettingsRepository
 {
-    IEnumerable<Setting> GetAll();
-    int Save(IEnumerable<Setting> settings);
+    Task<IEnumerable<Setting>> GetAll();
+    Task<int> Save(IEnumerable<Setting> settings);
 }
 
 public class SettingsRepository : ISettingsRepository
@@ -21,7 +21,7 @@ public class SettingsRepository : ISettingsRepository
         _logger = logger;
     }
 
-    public IEnumerable<Setting> GetAll()
+    public async Task<IEnumerable<Setting>> GetAll()
     {
         try
         {
@@ -29,8 +29,8 @@ public class SettingsRepository : ISettingsRepository
                 SELECT Key, Value
                 FROM Settings
                 """;
-            using var connection = _connectionFactory.Create();
-            var settings = connection.Query<Setting>(sql).ToList();
+            await using var connection = await _connectionFactory.Create();
+            var settings = (await connection.QueryAsync<Setting>(sql)).ToList();
             return settings;
         }
         catch (SqliteException ex)
@@ -40,7 +40,7 @@ public class SettingsRepository : ISettingsRepository
         }
     }
 
-    public int Save(IEnumerable<Setting> settings)
+    public async Task<int> Save(IEnumerable<Setting> settings)
     {
         try
         {
@@ -49,10 +49,10 @@ public class SettingsRepository : ISettingsRepository
                 VALUES (@Key, @Value)
                 ON CONFLICT (Key) DO UPDATE SET Value = excluded.Value
                 """;
-            using var connection = _connectionFactory.Create();
-            using var transaction = connection.BeginTransaction();
-            var affected = connection.Execute(sql, settings, transaction);
-            transaction.Commit();
+            await using var connection = await _connectionFactory.Create();
+            await using var transaction = await connection.BeginTransactionAsync();
+            var affected = await connection.ExecuteAsync(sql, settings, transaction);
+            await transaction.CommitAsync();
             return affected;
         }
         catch (SqliteException ex)

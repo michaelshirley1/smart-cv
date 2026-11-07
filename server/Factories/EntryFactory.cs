@@ -5,10 +5,10 @@ namespace SmartCv.Factories;
 
 public interface IEntryFactory
 {
-    FactoryResult<ProfileDetail> Create(CreateEntryRequest request);
-    FactoryResult<ProfileDetail> Update(int id, EntryRequest request);
-    FactoryResult<ProfileDetail> Delete(int id);
-    FactoryResult<ProfileDetail> Reorder(ReorderRequest request);
+    Task<FactoryResult<ProfileDetail>> Create(CreateEntryRequest request);
+    Task<FactoryResult<ProfileDetail>> Update(int id, EntryRequest request);
+    Task<FactoryResult<ProfileDetail>> Delete(int id);
+    Task<FactoryResult<ProfileDetail>> Reorder(ReorderRequest request);
 }
 
 public class EntryFactory : IEntryFactory
@@ -17,59 +17,63 @@ public class EntryFactory : IEntryFactory
     private readonly ISectionRepository _sectionRepository;
     private readonly IEntryRepository _entryRepository;
 
-    public EntryFactory(IProfileFactory profileFactory, ISectionRepository sectionRepository, IEntryRepository entryRepository)
+    public EntryFactory(
+        IProfileFactory profileFactory,
+        ISectionRepository sectionRepository,
+        IEntryRepository entryRepository
+    )
     {
         _profileFactory = profileFactory;
         _sectionRepository = sectionRepository;
         _entryRepository = entryRepository;
     }
 
-    public FactoryResult<ProfileDetail> Create(CreateEntryRequest request)
+    public async Task<FactoryResult<ProfileDetail>> Create(CreateEntryRequest request)
     {
-        var section = _sectionRepository.GetById(request.SectionId);
+        var section = await _sectionRepository.GetById(request.SectionId);
         if (section is null) return FactoryResult<ProfileDetail>.NotFound($"Section {request.SectionId} not found.");
 
         var entry = ToEntry(request);
         entry.SectionId = section.Id;
-        _entryRepository.Create(entry);
+        await _entryRepository.Create(entry);
 
-        return _profileFactory.GetById(section.ProfileId);
+        return await _profileFactory.GetById(section.ProfileId);
     }
 
-    public FactoryResult<ProfileDetail> Update(int id, EntryRequest request)
+    public async Task<FactoryResult<ProfileDetail>> Update(int id, EntryRequest request)
     {
-        var profileId = _entryRepository.GetProfileId(id);
+        var profileId = await _entryRepository.GetProfileId(id);
         if (profileId is null) return FactoryResult<ProfileDetail>.NotFound($"Entry {id} not found.");
 
         var entry = ToEntry(request);
         entry.Id = id;
-        _entryRepository.Update(entry);
+        await _entryRepository.Update(entry);
 
-        return _profileFactory.GetById(profileId.Value);
+        return await _profileFactory.GetById(profileId.Value);
     }
 
-    public FactoryResult<ProfileDetail> Delete(int id)
+    public async Task<FactoryResult<ProfileDetail>> Delete(int id)
     {
-        var profileId = _entryRepository.GetProfileId(id);
+        var profileId = await _entryRepository.GetProfileId(id);
         if (profileId is null) return FactoryResult<ProfileDetail>.NotFound($"Entry {id} not found.");
 
-        _entryRepository.Delete(id);
+        await _entryRepository.Delete(id);
 
-        return _profileFactory.GetById(profileId.Value);
+        return await _profileFactory.GetById(profileId.Value);
     }
 
-    public FactoryResult<ProfileDetail> Reorder(ReorderRequest request)
+    public async Task<FactoryResult<ProfileDetail>> Reorder(ReorderRequest request)
     {
-        var section = _sectionRepository.GetById(request.ParentId);
+        var section = await _sectionRepository.GetById(request.ParentId);
         if (section is null) return FactoryResult<ProfileDetail>.NotFound($"Section {request.ParentId} not found.");
 
-        var existing = _entryRepository.GetBySectionId(section.Id).Select(entry => entry.Id);
+        var existing = (await _entryRepository.GetBySectionId(section.Id)).Select(entry => entry.Id);
         if (!OrderRules.IsCompleteOrder(request.Ids, existing))
             return FactoryResult<ProfileDetail>.Invalid("The new order must list every entry in the section exactly once.");
 
-        _entryRepository.Reorder(request.Ids);
+        await _entryRepository.Reorder(request.Ids);
 
-        return _profileFactory.GetById(section.ProfileId);
+        return await _profileFactory.GetById(section.ProfileId);
     }
 
     private static Entry ToEntry(EntryRequest request) => new()

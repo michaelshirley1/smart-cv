@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { lineCountLabel, SectionCardProps } from './model';
+import { limitText, lineCountLabel, parseLimit, SectionCardProps } from './model';
 import { priorityOptions, sectionKindOptions, withAlwaysOn } from '../model';
 import { hasEntryHeader } from '../../cv-wrapper/model';
 import { useContentActions } from '../actions';
@@ -22,19 +22,25 @@ const SectionCard: React.FC<SectionCardProps> = ({ section, tagOptions, alwaysOn
     const actions = useContentActions();
     const status = useTailoring().sectionStatus(section);
     const [confirmDelete, setConfirmDelete] = useState(false);
-    const [maxLines, setMaxLines] = useState(String(section.maxLines));
+    const [maxLines, setMaxLines] = useState(limitText(section.maxLines));
+    const [maxTotal, setMaxTotal] = useState(limitText(section.maxTotal));
     const entryIds = section.entries.map(entry => entry.id);
     const reorder = useReorder(`entry-${section.id}`, entryIds, ids => actions.reorderEntries(section.id, ids));
     const showEntryHeaders = hasEntryHeader(section.kind);
     const isAlwaysOn = alwaysOn !== undefined && section.tagIds.includes(alwaysOn.id);
     const bodyId = `section-${section.id}-body`;
 
-    useEffect(() => setMaxLines(String(section.maxLines)), [section.maxLines]);
+    useEffect(() => setMaxLines(limitText(section.maxLines)), [section.maxLines]);
+    useEffect(() => setMaxTotal(limitText(section.maxTotal)), [section.maxTotal]);
 
-    const saveMaxLines = () => {
-        const value = Number.parseInt(maxLines, 10);
-        if (value >= 1 && value <= 50 && value !== section.maxLines) actions.saveSection(section, { maxLines: value });
-        else setMaxLines(String(section.maxLines));
+    const saveLimits = () => {
+        const perEntry = parseLimit(maxLines, 50) ?? section.maxLines;
+        const inSection = parseLimit(maxTotal, 200) ?? section.maxTotal;
+        setMaxLines(limitText(perEntry));
+        setMaxTotal(limitText(inSection));
+        if (perEntry !== section.maxLines || inSection !== section.maxTotal) {
+            actions.saveSection(section, { maxLines: perEntry, maxTotal: inSection });
+        }
     };
 
     return (
@@ -90,14 +96,26 @@ const SectionCard: React.FC<SectionCardProps> = ({ section, tagOptions, alwaysOn
                             onChange={kind => actions.saveSection(section, { kind })}
                         />
                         <TextField
-                            className="section-card-max-lines"
-                            label="Max lines"
+                            className="section-card-limit"
+                            label="Max per entry"
                             type="number"
                             min={1}
                             max={50}
+                            placeholder="No limit"
                             value={maxLines}
                             onChange={setMaxLines}
-                            onBlur={saveMaxLines}
+                            onBlur={saveLimits}
+                        />
+                        <TextField
+                            className="section-card-limit"
+                            label="Max in section"
+                            type="number"
+                            min={1}
+                            max={200}
+                            placeholder="No limit"
+                            value={maxTotal}
+                            onChange={setMaxTotal}
+                            onBlur={saveLimits}
                         />
                         <Select
                             className="section-card-priority"

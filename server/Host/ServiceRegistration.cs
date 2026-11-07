@@ -18,6 +18,9 @@ public static class ServiceRegistration
         services.AddSingleton<IPdfService, PdfService>();
         services.AddSingleton<IFileDialogService, FileDialogService>();
         services.AddSingleton<IClientAddress, ClientAddress>();
+        services.AddSingleton<IDocumentReader, DocxReader>();
+        services.AddSingleton<IDocumentReader, PdfReader>();
+        services.AddSingleton<IDocumentReader, PlainTextReader>();
 
         services.AddScoped<ISchemaRepository, SchemaRepository>();
         services.AddScoped<ISettingsRepository, SettingsRepository>();
@@ -37,6 +40,7 @@ public static class ServiceRegistration
         services.AddScoped<IFontFactory, FontFactory>();
         services.AddScoped<ITailoringFactory, TailoringFactory>();
         services.AddScoped<IExportFactory, ExportFactory>();
+        services.AddScoped<IImportFactory, ImportFactory>();
 
         return services;
     }

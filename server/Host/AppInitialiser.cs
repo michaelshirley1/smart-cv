@@ -5,10 +5,10 @@ namespace SmartCv.Host;
 
 public static class AppInitialiser
 {
-    public static void Run(IServiceProvider services)
+    public static async Task Run(IServiceProvider services)
     {
         using var scope = services.CreateScope();
-        scope.ServiceProvider.GetRequiredService<ISchemaRepository>().EnsureCreated();
+        await scope.ServiceProvider.GetRequiredService<ISchemaRepository>().EnsureCreated();
         scope.ServiceProvider.GetRequiredService<ITemplateFileService>().EnsureBuiltIns();
     }
 }

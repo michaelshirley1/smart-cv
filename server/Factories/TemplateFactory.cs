@@ -7,11 +7,11 @@ namespace SmartCv.Factories;
 
 public interface ITemplateFactory
 {
-    IEnumerable<TemplateSummary> GetAll();
-    FactoryResult<Template> GetByName(string name);
-    FactoryResult<Template> Create(TemplateRequest request);
-    FactoryResult<Template> Update(string name, TemplateRequest request);
-    FactoryResult Delete(string name);
+    Task<IEnumerable<TemplateSummary>> GetAll();
+    Task<FactoryResult<Template>> GetByName(string name);
+    Task<FactoryResult<Template>> Create(TemplateRequest request);
+    Task<FactoryResult<Template>> Update(string name, TemplateRequest request);
+    Task<FactoryResult> Delete(string name);
 }
 
 public partial class TemplateFactory : ITemplateFactory
@@ -23,39 +23,42 @@ public partial class TemplateFactory : ITemplateFactory
     private readonly ITemplateFileService _templateFiles;
     private readonly IProfileRepository _profileRepository;
 
-    public TemplateFactory(ITemplateFileService templateFiles, IProfileRepository profileRepository)
+    public TemplateFactory(
+        ITemplateFileService templateFiles,
+        IProfileRepository profileRepository
+    )
     {
         _templateFiles = templateFiles;
         _profileRepository = profileRepository;
     }
 
-    public IEnumerable<TemplateSummary> GetAll() =>
-        _templateFiles.List().Select(name => new TemplateSummary { Name = name, IsBuiltIn = _templateFiles.IsBuiltIn(name) });
+    public Task<IEnumerable<TemplateSummary>> GetAll() =>
+        Task.FromResult(_templateFiles.List().Select(name => new TemplateSummary { Name = name, IsBuiltIn = _templateFiles.IsBuiltIn(name) }));
 
-    public FactoryResult<Template> GetByName(string name)
+    public Task<FactoryResult<Template>> GetByName(string name)
     {
         var values = _templateFiles.Read(name);
-        if (values is null) return FactoryResult<Template>.NotFound($"Template {name} not found.");
+        if (values is null) return Task.FromResult(FactoryResult<Template>.NotFound($"Template {name} not found."));
 
-        return FactoryResult<Template>.Success(ToTemplate(name, values));
+        return Task.FromResult(FactoryResult<Template>.Success(ToTemplate(name, values)));
     }
 
-    public FactoryResult<Template> Create(TemplateRequest request)
+    public Task<FactoryResult<Template>> Create(TemplateRequest request)
     {
         var name = Slugify(request.Name);
-        if (name.Length == 0) return FactoryResult<Template>.Invalid("Template names need at least one letter or number.");
-        if (_templateFiles.Exists(name)) return FactoryResult<Template>.Invalid($"A template called {name} already exists.");
+        if (name.Length == 0) return Task.FromResult(FactoryResult<Template>.Invalid("Template names need at least one letter or number."));
+        if (_templateFiles.Exists(name)) return Task.FromResult(FactoryResult<Template>.Invalid($"A template called {name} already exists."));
 
         var error = ValidateValues(request.Values);
-        if (error is not null) return FactoryResult<Template>.Invalid(error);
+        if (error is not null) return Task.FromResult(FactoryResult<Template>.Invalid(error));
 
         var values = Merge(_templateFiles.ReadBuiltIn(TemplateSummary.DefaultName), request.Values);
         _templateFiles.Write(name, values);
 
-        return FactoryResult<Template>.Success(ToTemplate(name, values));
+        return Task.FromResult(FactoryResult<Template>.Success(ToTemplate(name, values)));
     }
 
-    public FactoryResult<Template> Update(string name, TemplateRequest request)
+    public async Task<FactoryResult<Template>> Update(string name, TemplateRequest request)
     {
         var current = _templateFiles.Read(name);
         if (current is null) return FactoryResult<Template>.NotFound($"Template {name} not found.");
@@ -76,19 +79,19 @@ public partial class TemplateFactory : ITemplateFactory
         if (newName != name)
         {
             _templateFiles.Delete(name);
-            _profileRepository.ReplaceTemplate(name, newName);
+            await _profileRepository.ReplaceTemplate(name, newName);
         }
 
         return FactoryResult<Template>.Success(ToTemplate(newName, values));
     }
 
-    public FactoryResult Delete(string name)
+    public async Task<FactoryResult> Delete(string name)
     {
         if (!_templateFiles.Exists(name)) return FactoryResult.NotFound($"Template {name} not found.");
         if (_templateFiles.IsBuiltIn(name)) return FactoryResult.Invalid("Built-in templates can't be deleted.");
 
         _templateFiles.Delete(name);
-        _profileRepository.ReplaceTemplate(name, TemplateSummary.DefaultName);
+        await _profileRepository.ReplaceTemplate(name, TemplateSummary.DefaultName);
 
         return FactoryResult.Success();
     }

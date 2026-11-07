@@ -21,6 +21,15 @@ export interface PageSize {
     height: string;
 }
 
+export const lengthOptions: SelectOption<string>[] = [
+    { value: '0', label: 'No limit' },
+    { value: '1', label: '1 page' },
+    { value: '2', label: '2 pages' },
+    { value: '3', label: '3 pages' },
+    { value: '4', label: '4 pages' },
+    { value: '5', label: '5 pages' },
+];
+
 export const pageSizes: PageSize[] = [
     { value: 'letter', label: 'US Letter', width: '8.5in', height: '11in' },
     { value: 'a4', label: 'A4', width: '210mm', height: '297mm' },

@@ -5,7 +5,7 @@ using SmartCv.Models;
 namespace SmartCv.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api")]
 public class ExportController : ControllerBase
 {
     private readonly IExportFactory _exportFactory;
@@ -15,20 +15,39 @@ public class ExportController : ControllerBase
         _exportFactory = exportFactory;
     }
 
-    [HttpPost("pdf")]
+    [HttpPost("export/pdf", Name = "Export-Pdf")]
     [ProducesResponseType(typeof(ExportResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ExportPdf([FromBody] ExportRequest request, CancellationToken cancellationToken)
     {
-        return (await _exportFactory.ExportPdfAsync(request, cancellationToken)).ToActionResult();
+        try
+        {
+            var exportPdf = await _exportFactory.ExportPdf(request, cancellationToken);
+
+            return this.ToActionResult(exportPdf);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
-    [HttpGet("job/{id}")]
+    [HttpGet("export/job/{id}", Name = "Export-FetchPrintJob")]
     [ProducesResponseType(typeof(PrintJob), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult GetPrintJob(string id)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> FetchPrintJob([FromRoute] string id)
     {
-        return _exportFactory.GetPrintJob(id).ToActionResult();
+        try
+        {
+            var fetchPrintJob = await _exportFactory.GetPrintJob(id);
+
+            return this.ToActionResult(fetchPrintJob);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

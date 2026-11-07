@@ -5,11 +5,11 @@ namespace SmartCv.Factories;
 
 public interface ILineFactory
 {
-    FactoryResult<ProfileDetail> Create(CreateLineRequest request);
-    FactoryResult<ProfileDetail> Update(int id, LineRequest request);
-    FactoryResult<ProfileDetail> Delete(int id);
-    FactoryResult<ProfileDetail> Reorder(ReorderRequest request);
-    FactoryResult<ProfileDetail> SetTags(int id, TagLinksRequest request);
+    Task<FactoryResult<ProfileDetail>> Create(CreateLineRequest request);
+    Task<FactoryResult<ProfileDetail>> Update(int id, LineRequest request);
+    Task<FactoryResult<ProfileDetail>> Delete(int id);
+    Task<FactoryResult<ProfileDetail>> Reorder(ReorderRequest request);
+    Task<FactoryResult<ProfileDetail>> SetTags(int id, TagLinksRequest request);
 }
 
 public class LineFactory : ILineFactory
@@ -23,7 +23,8 @@ public class LineFactory : ILineFactory
         IProfileFactory profileFactory,
         IEntryRepository entryRepository,
         ILineRepository lineRepository,
-        ITagRepository tagRepository)
+        ITagRepository tagRepository
+    )
     {
         _profileFactory = profileFactory;
         _entryRepository = entryRepository;
@@ -31,31 +32,31 @@ public class LineFactory : ILineFactory
         _tagRepository = tagRepository;
     }
 
-    public FactoryResult<ProfileDetail> Create(CreateLineRequest request)
+    public async Task<FactoryResult<ProfileDetail>> Create(CreateLineRequest request)
     {
-        var profileId = _entryRepository.GetProfileId(request.EntryId);
+        var profileId = await _entryRepository.GetProfileId(request.EntryId);
         if (profileId is null) return FactoryResult<ProfileDetail>.NotFound($"Entry {request.EntryId} not found.");
-        if (HasForeignTags(profileId.Value, request.TagIds))
+        if (await HasForeignTags(profileId.Value, request.TagIds))
             return FactoryResult<ProfileDetail>.Invalid("Tags must belong to the same profile as the line.");
 
-        var lineId = _lineRepository.Create(new Line
+        var lineId = await _lineRepository.Create(new Line
         {
             EntryId = request.EntryId,
             Text = request.Text.Trim(),
             Override = request.Override,
             Priority = request.Priority,
         });
-        if (request.TagIds.Count > 0) _lineRepository.SetTags(lineId, request.TagIds);
+        if (request.TagIds.Count > 0) await _lineRepository.SetTags(lineId, request.TagIds);
 
-        return _profileFactory.GetById(profileId.Value);
+        return await _profileFactory.GetById(profileId.Value);
     }
 
-    public FactoryResult<ProfileDetail> Update(int id, LineRequest request)
+    public async Task<FactoryResult<ProfileDetail>> Update(int id, LineRequest request)
     {
-        var profileId = _lineRepository.GetProfileId(id);
+        var profileId = await _lineRepository.GetProfileId(id);
         if (profileId is null) return FactoryResult<ProfileDetail>.NotFound($"Line {id} not found.");
 
-        _lineRepository.Update(new Line
+        await _lineRepository.Update(new Line
         {
             Id = id,
             Text = request.Text.Trim(),
@@ -63,48 +64,48 @@ public class LineFactory : ILineFactory
             Priority = request.Priority,
         });
 
-        return _profileFactory.GetById(profileId.Value);
+        return await _profileFactory.GetById(profileId.Value);
     }
 
-    public FactoryResult<ProfileDetail> Delete(int id)
+    public async Task<FactoryResult<ProfileDetail>> Delete(int id)
     {
-        var profileId = _lineRepository.GetProfileId(id);
+        var profileId = await _lineRepository.GetProfileId(id);
         if (profileId is null) return FactoryResult<ProfileDetail>.NotFound($"Line {id} not found.");
 
-        _lineRepository.Delete(id);
+        await _lineRepository.Delete(id);
 
-        return _profileFactory.GetById(profileId.Value);
+        return await _profileFactory.GetById(profileId.Value);
     }
 
-    public FactoryResult<ProfileDetail> Reorder(ReorderRequest request)
+    public async Task<FactoryResult<ProfileDetail>> Reorder(ReorderRequest request)
     {
-        var profileId = _entryRepository.GetProfileId(request.ParentId);
+        var profileId = await _entryRepository.GetProfileId(request.ParentId);
         if (profileId is null) return FactoryResult<ProfileDetail>.NotFound($"Entry {request.ParentId} not found.");
 
-        var existing = _lineRepository.GetByEntryId(request.ParentId).Select(line => line.Id);
+        var existing = (await _lineRepository.GetByEntryId(request.ParentId)).Select(line => line.Id);
         if (!OrderRules.IsCompleteOrder(request.Ids, existing))
             return FactoryResult<ProfileDetail>.Invalid("The new order must list every line in the entry exactly once.");
 
-        _lineRepository.Reorder(request.Ids);
+        await _lineRepository.Reorder(request.Ids);
 
-        return _profileFactory.GetById(profileId.Value);
+        return await _profileFactory.GetById(profileId.Value);
     }
 
-    public FactoryResult<ProfileDetail> SetTags(int id, TagLinksRequest request)
+    public async Task<FactoryResult<ProfileDetail>> SetTags(int id, TagLinksRequest request)
     {
-        var profileId = _lineRepository.GetProfileId(id);
+        var profileId = await _lineRepository.GetProfileId(id);
         if (profileId is null) return FactoryResult<ProfileDetail>.NotFound($"Line {id} not found.");
-        if (HasForeignTags(profileId.Value, request.TagIds))
+        if (await HasForeignTags(profileId.Value, request.TagIds))
             return FactoryResult<ProfileDetail>.Invalid("Tags must belong to the same profile as the line.");
 
-        _lineRepository.SetTags(id, request.TagIds);
+        await _lineRepository.SetTags(id, request.TagIds);
 
-        return _profileFactory.GetById(profileId.Value);
+        return await _profileFactory.GetById(profileId.Value);
     }
 
-    private bool HasForeignTags(int profileId, IEnumerable<int> tagIds)
+    private async Task<bool> HasForeignTags(int profileId, IEnumerable<int> tagIds)
     {
-        var profileTags = _tagRepository.GetByProfileId(profileId).Select(tag => tag.Id).ToHashSet();
+        var profileTags = (await _tagRepository.GetByProfileId(profileId)).Select(tag => tag.Id).ToHashSet();
         return !tagIds.All(profileTags.Contains);
     }
 }

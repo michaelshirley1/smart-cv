@@ -11,7 +11,7 @@ public class ProfileRequest
     [StringLength(40)]
     public string TemplateName { get; set; } = string.Empty;
 
-    [Range(1, 5)]
+    [Range(0, 5)]
     public int TargetPages { get; set; } = 1;
 
     [StringLength(200)]
@@ -47,8 +47,11 @@ public class SectionRequest
 
     public SectionKind Kind { get; set; } = SectionKind.Custom;
 
-    [Range(1, 50)]
+    [Range(0, 50)]
     public int MaxLines { get; set; } = 5;
+
+    [Range(0, 200)]
+    public int MaxTotal { get; set; }
 
     public bool IsHidden { get; set; }
 

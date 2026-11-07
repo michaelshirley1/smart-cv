@@ -6,19 +6,19 @@ namespace SmartCv.Repositories;
 
 public interface ISectionRepository
 {
-    IEnumerable<Section> GetByProfileId(int profileId);
-    Section? GetById(int id);
-    int Create(Section section);
-    int Update(Section section);
-    int Delete(int id);
-    int Reorder(IReadOnlyList<int> ids);
-    IEnumerable<TagLink> GetTagLinks(int profileId);
-    int SetTags(int sectionId, IEnumerable<int> tagIds);
+    Task<IEnumerable<Section>> GetByProfileId(int profileId);
+    Task<Section?> GetById(int id);
+    Task<int> Create(Section section);
+    Task<int> Update(Section section);
+    Task<int> Delete(int id);
+    Task<int> Reorder(IReadOnlyList<int> ids);
+    Task<IEnumerable<TagLink>> GetTagLinks(int profileId);
+    Task<int> SetTags(int sectionId, IEnumerable<int> tagIds);
 }
 
 public class SectionRepository : ISectionRepository
 {
-    private const string Columns = "Id, ProfileId, Title, Kind, SortOrder, MaxLines, IsHidden, Priority";
+    private const string Columns = "Id, ProfileId, Title, Kind, SortOrder, MaxLines, IsHidden, Priority, MaxTotal";
 
     private readonly IDbConnectionFactory _connectionFactory;
     private readonly ILogger<SectionRepository> _logger;
@@ -29,7 +29,7 @@ public class SectionRepository : ISectionRepository
         _logger = logger;
     }
 
-    public IEnumerable<Section> GetByProfileId(int profileId)
+    public async Task<IEnumerable<Section>> GetByProfileId(int profileId)
     {
         try
         {
@@ -39,8 +39,8 @@ public class SectionRepository : ISectionRepository
                 WHERE ProfileId = @ProfileId
                 ORDER BY SortOrder, Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var sections = connection.Query<Section>(sql, new { ProfileId = profileId }).ToList();
+            await using var connection = await _connectionFactory.Create();
+            var sections = (await connection.QueryAsync<Section>(sql, new { ProfileId = profileId })).ToList();
             return sections;
         }
         catch (SqliteException ex)
@@ -50,7 +50,7 @@ public class SectionRepository : ISectionRepository
         }
     }
 
-    public Section? GetById(int id)
+    public async Task<Section?> GetById(int id)
     {
         try
         {
@@ -59,8 +59,8 @@ public class SectionRepository : ISectionRepository
                 FROM Sections
                 WHERE Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var section = connection.QuerySingleOrDefault<Section>(sql, new { Id = id });
+            await using var connection = await _connectionFactory.Create();
+            var section = await connection.QuerySingleOrDefaultAsync<Section>(sql, new { Id = id });
             return section;
         }
         catch (SqliteException ex)
@@ -70,12 +70,12 @@ public class SectionRepository : ISectionRepository
         }
     }
 
-    public int Create(Section section)
+    public async Task<int> Create(Section section)
     {
         try
         {
             const string sql = """
-                INSERT INTO Sections (ProfileId, Title, Kind, SortOrder, MaxLines, IsHidden, Priority)
+                INSERT INTO Sections (ProfileId, Title, Kind, SortOrder, MaxLines, IsHidden, Priority, MaxTotal)
                 VALUES (
                     @ProfileId,
                     @Title,
@@ -83,11 +83,12 @@ public class SectionRepository : ISectionRepository
                     (SELECT COALESCE(MAX(SortOrder) + 1, 0) FROM Sections WHERE ProfileId = @ProfileId),
                     @MaxLines,
                     @IsHidden,
-                    @Priority)
+                    @Priority,
+                    @MaxTotal)
                 RETURNING Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var id = connection.ExecuteScalar<int>(sql, new
+            await using var connection = await _connectionFactory.Create();
+            var id = await connection.ExecuteScalarAsync<int>(sql, new
             {
                 section.ProfileId,
                 section.Title,
@@ -95,6 +96,7 @@ public class SectionRepository : ISectionRepository
                 section.MaxLines,
                 section.IsHidden,
                 section.Priority,
+                section.MaxTotal,
             });
             return id;
         }
@@ -105,7 +107,7 @@ public class SectionRepository : ISectionRepository
         }
     }
 
-    public int Update(Section section)
+    public async Task<int> Update(Section section)
     {
         try
         {
@@ -115,11 +117,12 @@ public class SectionRepository : ISectionRepository
                     Kind = @Kind,
                     MaxLines = @MaxLines,
                     IsHidden = @IsHidden,
-                    Priority = @Priority
+                    Priority = @Priority,
+                    MaxTotal = @MaxTotal
                 WHERE Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var affected = connection.Execute(sql, new
+            await using var connection = await _connectionFactory.Create();
+            var affected = await connection.ExecuteAsync(sql, new
             {
                 section.Id,
                 section.Title,
@@ -127,6 +130,7 @@ public class SectionRepository : ISectionRepository
                 section.MaxLines,
                 section.IsHidden,
                 section.Priority,
+                section.MaxTotal,
             });
             return affected;
         }
@@ -137,7 +141,7 @@ public class SectionRepository : ISectionRepository
         }
     }
 
-    public int Delete(int id)
+    public async Task<int> Delete(int id)
     {
         try
         {
@@ -145,8 +149,8 @@ public class SectionRepository : ISectionRepository
                 DELETE FROM Sections
                 WHERE Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var affected = connection.Execute(sql, new { Id = id });
+            await using var connection = await _connectionFactory.Create();
+            var affected = await connection.ExecuteAsync(sql, new { Id = id });
             return affected;
         }
         catch (SqliteException ex)
@@ -156,7 +160,7 @@ public class SectionRepository : ISectionRepository
         }
     }
 
-    public int Reorder(IReadOnlyList<int> ids)
+    public async Task<int> Reorder(IReadOnlyList<int> ids)
     {
         try
         {
@@ -165,10 +169,10 @@ public class SectionRepository : ISectionRepository
                 SET SortOrder = @SortOrder
                 WHERE Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            using var transaction = connection.BeginTransaction();
-            var affected = connection.Execute(sql, ids.Select((id, index) => new { Id = id, SortOrder = index }), transaction);
-            transaction.Commit();
+            await using var connection = await _connectionFactory.Create();
+            await using var transaction = await connection.BeginTransactionAsync();
+            var affected = await connection.ExecuteAsync(sql, ids.Select((id, index) => new { Id = id, SortOrder = index }), transaction);
+            await transaction.CommitAsync();
             return affected;
         }
         catch (SqliteException ex)
@@ -178,7 +182,7 @@ public class SectionRepository : ISectionRepository
         }
     }
 
-    public IEnumerable<TagLink> GetTagLinks(int profileId)
+    public async Task<IEnumerable<TagLink>> GetTagLinks(int profileId)
     {
         try
         {
@@ -188,8 +192,8 @@ public class SectionRepository : ISectionRepository
                 INNER JOIN Sections s ON s.Id = st.SectionId
                 WHERE s.ProfileId = @ProfileId
                 """;
-            using var connection = _connectionFactory.Create();
-            var links = connection.Query<TagLink>(sql, new { ProfileId = profileId }).ToList();
+            await using var connection = await _connectionFactory.Create();
+            var links = (await connection.QueryAsync<TagLink>(sql, new { ProfileId = profileId })).ToList();
             return links;
         }
         catch (SqliteException ex)
@@ -199,7 +203,7 @@ public class SectionRepository : ISectionRepository
         }
     }
 
-    public int SetTags(int sectionId, IEnumerable<int> tagIds)
+    public async Task<int> SetTags(int sectionId, IEnumerable<int> tagIds)
     {
         try
         {
@@ -211,11 +215,11 @@ public class SectionRepository : ISectionRepository
                 INSERT INTO SectionTags (SectionId, TagId)
                 VALUES (@SectionId, @TagId)
                 """;
-            using var connection = _connectionFactory.Create();
-            using var transaction = connection.BeginTransaction();
-            connection.Execute(deleteSql, new { SectionId = sectionId }, transaction);
-            var affected = connection.Execute(insertSql, tagIds.Distinct().Select(tagId => new { SectionId = sectionId, TagId = tagId }), transaction);
-            transaction.Commit();
+            await using var connection = await _connectionFactory.Create();
+            await using var transaction = await connection.BeginTransactionAsync();
+            await connection.ExecuteAsync(deleteSql, new { SectionId = sectionId }, transaction);
+            var affected = await connection.ExecuteAsync(insertSql, tagIds.Distinct().Select(tagId => new { SectionId = sectionId, TagId = tagId }), transaction);
+            await transaction.CommitAsync();
             return affected;
         }
         catch (SqliteException ex)

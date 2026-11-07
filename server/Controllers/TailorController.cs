@@ -5,7 +5,7 @@ using SmartCv.Models;
 namespace SmartCv.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api")]
 public class TailorController : ControllerBase
 {
     private readonly ITailoringFactory _tailoringFactory;
@@ -15,12 +15,21 @@ public class TailorController : ControllerBase
         _tailoringFactory = tailoringFactory;
     }
 
-    [HttpPost]
+    [HttpPost("tailor", Name = "Tailor-Tailor")]
     [ProducesResponseType(typeof(TailorResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Tailor([FromBody] TailorRequest request, CancellationToken cancellationToken)
     {
-        return (await _tailoringFactory.TailorAsync(request, cancellationToken)).ToActionResult();
+        try
+        {
+            var tailor = await _tailoringFactory.Tailor(request, cancellationToken);
+
+            return this.ToActionResult(tailor);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

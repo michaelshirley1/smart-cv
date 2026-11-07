@@ -38,7 +38,8 @@ const CvCanvas: React.FC<CvCanvasProps> = () => {
 
         const pageHeight = page.offsetWidth * (reference.offsetHeight / reference.offsetWidth);
         if (isTailored && result && fit.key !== fitKey) {
-            const { trimmed, fits } = linesToTrim(page, result.trimOrder, page.offsetHeight - pageHeight * targetPages);
+            const overflow = targetPages === 0 ? 0 : page.offsetHeight - pageHeight * targetPages;
+            const { trimmed, fits } = linesToTrim(page, result.trimOrder, overflow);
             setFit({ key: fitKey, trimmedIds: trimmed, fits });
             return;
         }
@@ -52,7 +53,7 @@ const CvCanvas: React.FC<CvCanvasProps> = () => {
         saveLine: (id, request) => mutate(() => api.updateLine(id, request), 'Could not save the line.'),
     } : undefined;
 
-    const target = `target ${targetPages} page${targetPages === 1 ? '' : 's'}`;
+    const target = targetPages === 0 ? 'no page limit' : `target ${targetPages} page${targetPages === 1 ? '' : 's'}`;
     const status = !isTailored
         ? `All lines · ${pageLabel(pages)} · ${target}`
         : !fit.fits

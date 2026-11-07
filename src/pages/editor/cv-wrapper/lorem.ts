@@ -49,6 +49,7 @@ const section = (title: string, kind: SectionKind, build: (id: number) => Entry[
         kind,
         sortOrder: 0,
         maxLines: 5,
+        maxTotal: 0,
         isHidden: false,
         priority: normalPriority,
         tagIds: [],

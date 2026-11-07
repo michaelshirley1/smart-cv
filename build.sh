@@ -3,10 +3,11 @@ set -euo pipefail
 
 runtime="${1:-linux-x64}"
 cd "$(dirname "$0")"
+version="${2:-$(tr -d '[:space:]' < VERSION).0}"
 
 npm ci
 npm run build
-dotnet publish server/SmartCv.csproj -c Release -r "$runtime" --self-contained -p:PublishSingleFile=true -o "publish/$runtime"
+dotnet publish server/SmartCv.csproj -c Release -r "$runtime" --self-contained -p:PublishSingleFile=true -p:Version="$version" -o "publish/$runtime"
 
 if [[ "$runtime" == osx-* ]]; then
     app="publish/$runtime/SmartCv.app"
@@ -27,10 +28,12 @@ if [[ "$runtime" == osx-* ]]; then
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.1.0</string>
+    <string>$version</string>
+    <key>CFBundleVersion</key>
+    <string>$version</string>
 </dict>
 </plist>
 PLIST
 fi
 
-echo "Built publish/$runtime"
+echo "Built publish/$runtime ($version)"

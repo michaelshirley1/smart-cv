@@ -6,13 +6,13 @@ namespace SmartCv.Repositories;
 
 public interface ITagRepository
 {
-    IEnumerable<Tag> GetByProfileId(int profileId);
-    Tag? GetById(int id);
-    int Create(Tag tag);
-    int Update(Tag tag);
-    int Delete(int id);
-    IEnumerable<int> GetTailorTagIds(int profileId);
-    int SetTailorTags(int profileId, IReadOnlyList<int> tagIds);
+    Task<IEnumerable<Tag>> GetByProfileId(int profileId);
+    Task<Tag?> GetById(int id);
+    Task<int> Create(Tag tag);
+    Task<int> Update(Tag tag);
+    Task<int> Delete(int id);
+    Task<IEnumerable<int>> GetTailorTagIds(int profileId);
+    Task<int> SetTailorTags(int profileId, IReadOnlyList<int> tagIds);
 }
 
 public class TagRepository : ITagRepository
@@ -32,7 +32,7 @@ public class TagRepository : ITagRepository
         _logger = logger;
     }
 
-    public IEnumerable<Tag> GetByProfileId(int profileId)
+    public async Task<IEnumerable<Tag>> GetByProfileId(int profileId)
     {
         try
         {
@@ -42,8 +42,8 @@ public class TagRepository : ITagRepository
                 WHERE t.ProfileId = @ProfileId
                 ORDER BY t.IsAlwaysOn DESC, t.Name COLLATE NOCASE
                 """;
-            using var connection = _connectionFactory.Create();
-            var tags = connection.Query<Tag>(sql, new { ProfileId = profileId }).ToList();
+            await using var connection = await _connectionFactory.Create();
+            var tags = (await connection.QueryAsync<Tag>(sql, new { ProfileId = profileId })).ToList();
             return tags;
         }
         catch (SqliteException ex)
@@ -53,7 +53,7 @@ public class TagRepository : ITagRepository
         }
     }
 
-    public Tag? GetById(int id)
+    public async Task<Tag?> GetById(int id)
     {
         try
         {
@@ -62,8 +62,8 @@ public class TagRepository : ITagRepository
                 FROM Tags t
                 WHERE t.Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var tag = connection.QuerySingleOrDefault<Tag>(sql, new { Id = id });
+            await using var connection = await _connectionFactory.Create();
+            var tag = await connection.QuerySingleOrDefaultAsync<Tag>(sql, new { Id = id });
             return tag;
         }
         catch (SqliteException ex)
@@ -73,7 +73,7 @@ public class TagRepository : ITagRepository
         }
     }
 
-    public int Create(Tag tag)
+    public async Task<int> Create(Tag tag)
     {
         try
         {
@@ -82,8 +82,8 @@ public class TagRepository : ITagRepository
                 VALUES (@ProfileId, @Name, @Keywords, @Colour, @IsAlwaysOn)
                 RETURNING Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var id = connection.ExecuteScalar<int>(sql, new
+            await using var connection = await _connectionFactory.Create();
+            var id = await connection.ExecuteScalarAsync<int>(sql, new
             {
                 tag.ProfileId,
                 tag.Name,
@@ -100,7 +100,7 @@ public class TagRepository : ITagRepository
         }
     }
 
-    public int Update(Tag tag)
+    public async Task<int> Update(Tag tag)
     {
         try
         {
@@ -111,8 +111,8 @@ public class TagRepository : ITagRepository
                     Colour = @Colour
                 WHERE Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var affected = connection.Execute(sql, new
+            await using var connection = await _connectionFactory.Create();
+            var affected = await connection.ExecuteAsync(sql, new
             {
                 tag.Id,
                 tag.Name,
@@ -128,7 +128,7 @@ public class TagRepository : ITagRepository
         }
     }
 
-    public int Delete(int id)
+    public async Task<int> Delete(int id)
     {
         try
         {
@@ -136,8 +136,8 @@ public class TagRepository : ITagRepository
                 DELETE FROM Tags
                 WHERE Id = @Id
                 """;
-            using var connection = _connectionFactory.Create();
-            var affected = connection.Execute(sql, new { Id = id });
+            await using var connection = await _connectionFactory.Create();
+            var affected = await connection.ExecuteAsync(sql, new { Id = id });
             return affected;
         }
         catch (SqliteException ex)
@@ -147,7 +147,7 @@ public class TagRepository : ITagRepository
         }
     }
 
-    public IEnumerable<int> GetTailorTagIds(int profileId)
+    public async Task<IEnumerable<int>> GetTailorTagIds(int profileId)
     {
         try
         {
@@ -157,8 +157,8 @@ public class TagRepository : ITagRepository
                 WHERE ProfileId = @ProfileId
                 ORDER BY SortOrder
                 """;
-            using var connection = _connectionFactory.Create();
-            var tagIds = connection.Query<int>(sql, new { ProfileId = profileId }).ToList();
+            await using var connection = await _connectionFactory.Create();
+            var tagIds = (await connection.QueryAsync<int>(sql, new { ProfileId = profileId })).ToList();
             return tagIds;
         }
         catch (SqliteException ex)
@@ -168,7 +168,7 @@ public class TagRepository : ITagRepository
         }
     }
 
-    public int SetTailorTags(int profileId, IReadOnlyList<int> tagIds)
+    public async Task<int> SetTailorTags(int profileId, IReadOnlyList<int> tagIds)
     {
         try
         {
@@ -180,11 +180,11 @@ public class TagRepository : ITagRepository
                 INSERT INTO ProfileTailorTags (ProfileId, TagId, SortOrder)
                 VALUES (@ProfileId, @TagId, @SortOrder)
                 """;
-            using var connection = _connectionFactory.Create();
-            using var transaction = connection.BeginTransaction();
-            connection.Execute(deleteSql, new { ProfileId = profileId }, transaction);
-            var affected = connection.Execute(insertSql, tagIds.Select((tagId, index) => new { ProfileId = profileId, TagId = tagId, SortOrder = index }), transaction);
-            transaction.Commit();
+            await using var connection = await _connectionFactory.Create();
+            await using var transaction = await connection.BeginTransactionAsync();
+            await connection.ExecuteAsync(deleteSql, new { ProfileId = profileId }, transaction);
+            var affected = await connection.ExecuteAsync(insertSql, tagIds.Select((tagId, index) => new { ProfileId = profileId, TagId = tagId, SortOrder = index }), transaction);
+            await transaction.CommitAsync();
             return affected;
         }
         catch (SqliteException ex)

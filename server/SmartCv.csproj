@@ -7,6 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>SmartCv</RootNamespace>
     <AssemblyName>SmartCv</AssemblyName>
+    <Version>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)../VERSION').Trim()).0</Version>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <InvariantGlobalization>true</InvariantGlobalization>
     <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
@@ -25,6 +26,7 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.14" />
+    <PackageReference Include="PdfPig" Version="0.1.16" />
     <PackageReference Include="Photino.NET" Version="4.0.16" />
     <PackageReference Include="PuppeteerSharp" Version="25.15.0" />
     <PackageReference Include="SkiaSharp" Version="4.155.0" />

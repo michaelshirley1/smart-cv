@@ -7,10 +7,10 @@ namespace SmartCv.Tests;
 public class SchemaRepositoryTests
 {
     [Fact]
-    public void EnsureCreated_CreatesAllTables()
+    public async Task EnsureCreated_CreatesAllTables()
     {
         using var database = new TestDatabase();
-        using var connection = database.Connections.Create();
+        using var connection = await database.Connections.Create();
 
         var tables = connection.Query<string>("SELECT name FROM sqlite_master WHERE type = 'table'").ToList();
 
@@ -20,23 +20,23 @@ public class SchemaRepositoryTests
     }
 
     [Fact]
-    public void EnsureCreated_CanRunTwice()
+    public async Task EnsureCreated_CanRunTwice()
     {
         using var database = new TestDatabase();
         var repository = new SchemaRepository(database.Connections, NullLogger<SchemaRepository>.Instance);
 
-        repository.EnsureCreated();
-        using var connection = database.Connections.Create();
+        await repository.EnsureCreated();
+        using var connection = await database.Connections.Create();
         var settingCount = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM Settings");
 
         Assert.Equal(4, settingCount);
     }
 
     [Fact]
-    public void ForeignKeys_AreEnforced()
+    public async Task ForeignKeys_AreEnforced()
     {
         using var database = new TestDatabase();
-        using var connection = database.Connections.Create();
+        using var connection = await database.Connections.Create();
 
         var enabled = connection.ExecuteScalar<int>("PRAGMA foreign_keys");
 

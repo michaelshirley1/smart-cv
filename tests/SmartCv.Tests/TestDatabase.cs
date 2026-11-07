@@ -21,7 +21,7 @@ public sealed class TestDatabase : IDisposable
         _provider = services.BuildServiceProvider();
         _scope = _provider.CreateScope();
 
-        Get<ISchemaRepository>().EnsureCreated();
+        Get<ISchemaRepository>().EnsureCreated().GetAwaiter().GetResult();
         Get<ITemplateFileService>().EnsureBuiltIns();
     }
 

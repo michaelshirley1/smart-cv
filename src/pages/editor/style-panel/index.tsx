@@ -1,5 +1,5 @@
 import React from 'react';
-import { pageSizes, StylePanelProps, styleGroups } from './model';
+import { lengthOptions, pageSizes, StylePanelProps, styleGroups } from './model';
 import { useProfileContext } from '../profile-context';
 import { useTemplateEditor } from './template-editor';
 import { useContentActions } from '../content-panel/actions';
@@ -8,7 +8,6 @@ import TemplatePicker from './template-picker';
 import StyleGroup from './style-group';
 import SectionOrder from './section-order';
 import Disclosure from '../../../components/disclosure';
-import NumberField from '../../../components/number-field';
 import Select from '../../../components/select';
 
 import './styles.scss';
@@ -43,12 +42,11 @@ const StylePanel: React.FC<StylePanelProps> = () => {
                             onChange={setPageSize}
                         />
                     )}
-                    <NumberField
-                        label="Target pages"
-                        value={profile.targetPages}
-                        min={1}
-                        max={5}
-                        onChange={targetPages => actions.saveProfile({ ...toProfileRequest(profile), targetPages })}
+                    <Select
+                        label="Length"
+                        value={String(profile.targetPages)}
+                        options={lengthOptions}
+                        onChange={value => actions.saveProfile({ ...toProfileRequest(profile), targetPages: Number(value) })}
                     />
                 </div>
             </Disclosure>

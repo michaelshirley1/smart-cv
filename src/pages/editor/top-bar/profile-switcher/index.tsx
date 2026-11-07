@@ -9,7 +9,18 @@ import NameDialog from '../../../../components/name-dialog';
 import './styles.scss';
 
 const ProfileSwitcher: React.FC<ProfileSwitcherProps> = () => {
-    const { profiles, profile, loading, selectProfile, createProfile, renameProfile, duplicateProfile, deleteProfile } = useProfileContext();
+    const { profiles, profile, loading, selectProfile, createProfile, renameProfile, duplicateProfile, deleteProfile, importProfile } = useProfileContext();
+    const fileInput = useRef<HTMLInputElement>(null);
+    const [importing, setImporting] = useState(false);
+
+    const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file) return;
+        setImporting(true);
+        await importProfile(file);
+        setImporting(false);
+    };
     const [open, setOpen] = useState(false);
     const [dialog, setDialog] = useState<ProfileDialogKind>(null);
     const container = useRef<HTMLDivElement>(null);
@@ -49,7 +60,7 @@ const ProfileSwitcher: React.FC<ProfileSwitcherProps> = () => {
                 disabled={loading || !profile}
                 onClick={() => setOpen(current => !current)}
             >
-                <span className="profile-switcher-label">{profile?.name ?? 'Loading'}</span>
+                <span className="profile-switcher-label">{importing ? 'Importing…' : profile?.name ?? 'Loading'}</span>
                 <Icon name="chevron-down" />
             </button>
 
@@ -73,12 +84,22 @@ const ProfileSwitcher: React.FC<ProfileSwitcherProps> = () => {
                     </ul>
                     <div className="profile-switcher-actions">
                         <button type="button" role="menuitem" className="profile-switcher-action" onClick={() => choose(() => setDialog('create'))}>New profile</button>
+                        <button type="button" role="menuitem" className="profile-switcher-action" onClick={() => choose(() => fileInput.current?.click())}>Import CV…</button>
                         <button type="button" role="menuitem" className="profile-switcher-action" onClick={() => choose(() => setDialog('rename'))}>Rename</button>
                         <button type="button" role="menuitem" className="profile-switcher-action" onClick={() => choose(duplicateProfile)}>Duplicate</button>
                         <button type="button" role="menuitem" className="profile-switcher-action profile-switcher-action--danger" onClick={() => choose(() => setDialog('delete'))}>Delete</button>
                     </div>
                 </div>
             )}
+
+            <input
+                ref={fileInput}
+                type="file"
+                className="profile-switcher-file"
+                accept=".docx,.pdf,.txt,.md"
+                aria-label="Choose a CV to import"
+                onChange={handleFile}
+            />
 
             {dialog === 'create' && (
                 <NameDialog title="New profile" label="Profile name" placeholder="e.g. Backend roles" confirmLabel="Create" initialName="" onSubmit={createProfile} onClose={closeDialog} />

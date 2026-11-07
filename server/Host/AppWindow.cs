@@ -7,7 +7,7 @@ public static class AppWindow
     public static PhotinoWindow Create(string url, IAppPaths paths)
     {
         return new PhotinoWindow()
-            .SetTitle("Smart CV")
+            .SetTitle($"Smart CV {typeof(AppWindow).Assembly.GetName().Version?.ToString(3)}")
             .SetIconFile(IconFile(paths))
             .SetUseOsDefaultSize(false)
             .SetSize(1440, 900)

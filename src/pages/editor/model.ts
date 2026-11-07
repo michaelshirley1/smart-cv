@@ -36,6 +36,7 @@ export interface Section {
     kind: SectionKind;
     sortOrder: number;
     maxLines: number;
+    maxTotal: number;
     isHidden: boolean;
     priority: number;
     tagIds: number[];
@@ -90,6 +91,7 @@ export interface SectionRequest {
     title: string;
     kind: SectionKind;
     maxLines: number;
+    maxTotal: number;
     isHidden: boolean;
     priority: number;
 }

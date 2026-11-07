@@ -15,30 +15,30 @@ public class RestoreAndJobDescriptionTests
                     $"{line.Text}({line.Override},{string.Join(",", line.TagIds.Select(id => profile.Tags.Single(t => t.Id == id).Name).Order())})"))))));
 
     [Fact]
-    public void Restore_PutsTheProfileBackExactly()
+    public async Task Restore_PutsTheProfileBackExactly()
     {
         using var database = new TestDatabase();
         var factory = database.Get<IProfileFactory>();
-        var profile = database.CreateProfile();
-        factory.Update(profile.Id, new ProfileRequest { Name = "Engineering", FullName = "Alex", Links = ["github.com/alex"] });
-        profile = database.AddTag(profile.Id, "Backend", "c#");
+        var profile = await database.CreateProfile();
+        await factory.Update(profile.Id, new ProfileRequest { Name = "Engineering", FullName = "Alex", Links = ["github.com/alex"] });
+        profile = await database.AddTag(profile.Id, "Backend", "c#");
         var backend = profile.Tags.Single(t => t.Name == "Backend").Id;
         var alwaysOn = profile.Tags.Single(t => t.IsAlwaysOn).Id;
-        profile = database.AddSection(profile.Id);
-        database.Get<IEntryFactory>().Update(profile.Sections[0].Entries[0].Id, new EntryRequest { Heading = "Acme" });
-        database.AddLine(profile.Sections[0].Entries[0].Id, "Built **APIs**", backend, alwaysOn);
-        profile = database.AddLine(profile.Sections[0].Entries[0].Id, "Hidden line");
-        database.Get<ILineFactory>().Update(profile.Sections[0].Entries[0].Lines[1].Id, new LineRequest { Text = "Hidden line", Override = LineOverride.Hidden });
-        database.Get<ISectionFactory>().SetTags(profile.Sections[0].Id, new TagLinksRequest { TagIds = [backend] });
-        factory.SaveJobDescription(profile.Id, new JobDescriptionRequest { JobDescription = "C# role" });
-        var snapshot = factory.GetById(profile.Id).Value!;
+        profile = await database.AddSection(profile.Id);
+        await database.Get<IEntryFactory>().Update(profile.Sections[0].Entries[0].Id, new EntryRequest { Heading = "Acme" });
+        await database.AddLine(profile.Sections[0].Entries[0].Id, "Built **APIs**", backend, alwaysOn);
+        profile = await database.AddLine(profile.Sections[0].Entries[0].Id, "Hidden line");
+        await database.Get<ILineFactory>().Update(profile.Sections[0].Entries[0].Lines[1].Id, new LineRequest { Text = "Hidden line", Override = LineOverride.Hidden });
+        await database.Get<ISectionFactory>().SetTags(profile.Sections[0].Id, new TagLinksRequest { TagIds = [backend] });
+        await factory.SaveJobDescription(profile.Id, new JobDescriptionRequest { JobDescription = "C# role" });
+        var snapshot = (await factory.GetById(profile.Id)).Value!;
 
-        database.Get<ISectionFactory>().Delete(snapshot.Sections[0].Id);
-        database.Get<ITagFactory>().Update(backend, new TagRequest { Name = "Server" });
-        factory.Update(profile.Id, new ProfileRequest { Name = "Changed", FullName = "Someone else" });
-        factory.SaveJobDescription(profile.Id, new JobDescriptionRequest { JobDescription = "" });
+        await database.Get<ISectionFactory>().Delete(snapshot.Sections[0].Id);
+        await database.Get<ITagFactory>().Update(backend, new TagRequest { Name = "Server" });
+        await factory.Update(profile.Id, new ProfileRequest { Name = "Changed", FullName = "Someone else" });
+        await factory.SaveJobDescription(profile.Id, new JobDescriptionRequest { JobDescription = "" });
 
-        var restored = factory.Restore(profile.Id, snapshot).Value!;
+        var restored = (await factory.Restore(profile.Id, snapshot)).Value!;
 
         Assert.Equal(Describe(snapshot), Describe(restored));
         Assert.Equal("Engineering", restored.Name);
@@ -51,32 +51,32 @@ public class RestoreAndJobDescriptionTests
     }
 
     [Fact]
-    public void Duplicate_CopiesTheJobDescription()
+    public async Task Duplicate_CopiesTheJobDescription()
     {
         using var database = new TestDatabase();
         var factory = database.Get<IProfileFactory>();
-        var profile = database.CreateProfile();
-        factory.SaveJobDescription(profile.Id, new JobDescriptionRequest { JobDescription = "  Frontend role  " });
+        var profile = await database.CreateProfile();
+        await factory.SaveJobDescription(profile.Id, new JobDescriptionRequest { JobDescription = "  Frontend role  " });
 
-        var copy = factory.Duplicate(profile.Id).Value!;
+        var copy = (await factory.Duplicate(profile.Id)).Value!;
 
-        Assert.Equal("Frontend role", factory.GetById(profile.Id).Value!.JobDescription);
+        Assert.Equal("Frontend role", (await factory.GetById(profile.Id)).Value!.JobDescription);
         Assert.Equal("Frontend role", copy.JobDescription);
-        Assert.Equal(FactoryStatus.NotFound, factory.SaveJobDescription(99, new JobDescriptionRequest()).Status);
+        Assert.Equal(FactoryStatus.NotFound, (await factory.SaveJobDescription(99, new JobDescriptionRequest())).Status);
     }
 
     [Fact]
-    public void Schema_AddsTheJobDescriptionColumnToOlderDatabases()
+    public async Task Schema_AddsTheJobDescriptionColumnToOlderDatabases()
     {
         using var database = new TestDatabase();
-        using (var connection = database.Connections.Create())
+        using (var connection = await database.Connections.Create())
         {
             connection.Execute("ALTER TABLE Profiles DROP COLUMN JobDescription");
             Assert.Equal(0, connection.ExecuteScalar<int>("SELECT COUNT(*) FROM pragma_table_info('Profiles') WHERE name = 'JobDescription'"));
         }
 
-        database.Get<ISchemaRepository>().EnsureCreated();
-        var profile = database.CreateProfile();
+        await database.Get<ISchemaRepository>().EnsureCreated();
+        var profile = await database.CreateProfile();
 
         Assert.Equal(string.Empty, profile.JobDescription);
     }

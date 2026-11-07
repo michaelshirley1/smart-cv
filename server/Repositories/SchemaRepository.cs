@@ -5,7 +5,7 @@ namespace SmartCv.Repositories;
 
 public interface ISchemaRepository
 {
-    int EnsureCreated();
+    Task<int> EnsureCreated();
 }
 
 public class SchemaRepository : ISchemaRepository
@@ -15,6 +15,7 @@ public class SchemaRepository : ISchemaRepository
         ("Profiles", "JobDescription", "TEXT NOT NULL DEFAULT ''"),
         ("Sections", "Priority", "INTEGER NOT NULL DEFAULT 3"),
         ("Lines", "Priority", "INTEGER NOT NULL DEFAULT 3"),
+        ("Sections", "MaxTotal", "INTEGER NOT NULL DEFAULT 0"),
     ];
 
     private readonly IDbConnectionFactory _connectionFactory;
@@ -26,7 +27,7 @@ public class SchemaRepository : ISchemaRepository
         _logger = logger;
     }
 
-    public int EnsureCreated()
+    public async Task<int> EnsureCreated()
     {
         try
         {
@@ -55,7 +56,8 @@ public class SchemaRepository : ISchemaRepository
                     SortOrder INTEGER NOT NULL DEFAULT 0,
                     MaxLines INTEGER NOT NULL DEFAULT 5,
                     IsHidden INTEGER NOT NULL DEFAULT 0,
-                    Priority INTEGER NOT NULL DEFAULT 3
+                    Priority INTEGER NOT NULL DEFAULT 3,
+                    MaxTotal INTEGER NOT NULL DEFAULT 0
                 );
 
                 CREATE TABLE IF NOT EXISTS Entries (
@@ -133,12 +135,12 @@ public class SchemaRepository : ISchemaRepository
                 FROM pragma_table_info(@Table)
                 WHERE name = @Column
                 """;
-            using var connection = _connectionFactory.Create();
-            var affected = connection.Execute(sql);
+            await using var connection = await _connectionFactory.Create();
+            var affected = await connection.ExecuteAsync(sql);
             foreach (var (table, column, definition) in AddedColumns)
             {
-                if (connection.ExecuteScalar<int>(columnSql, new { Table = table, Column = column }) == 0)
-                    affected += connection.Execute($"ALTER TABLE {table} ADD COLUMN {column} {definition}");
+                if (await connection.ExecuteScalarAsync<int>(columnSql, new { Table = table, Column = column }) == 0)
+                    affected += await connection.ExecuteAsync($"ALTER TABLE {table} ADD COLUMN {column} {definition}");
             }
             return affected;
         }

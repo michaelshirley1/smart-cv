@@ -13,3 +13,4 @@ tests/**/obj/
 .claude/
 *.log
 PLAN.md
+TestResults/

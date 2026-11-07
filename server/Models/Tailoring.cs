@@ -11,6 +11,12 @@ public enum SectionDecision
     Hidden
 }
 
+public enum TailorSource
+{
+    Description,
+    Tags
+}
+
 public enum LineDecision
 {
     AlwaysOn,
@@ -28,9 +34,11 @@ public class TailorRequest
     [Range(1, int.MaxValue)]
     public int ProfileId { get; set; }
 
-    [Required]
-    [StringLength(50000, MinimumLength = 1)]
+    [StringLength(50000)]
     public string JobDescription { get; set; } = string.Empty;
+
+    [MaxLength(50)]
+    public List<int> TagIds { get; set; } = [];
 }
 
 public class TagMatch
@@ -54,12 +62,14 @@ public class LineResult
     public int EntryId { get; set; }
     public int SectionId { get; set; }
     public int Score { get; set; }
+    public int Priority { get; set; } = Priorities.Normal;
     public bool Included { get; set; }
     public LineDecision Decision { get; set; }
 }
 
 public class TailorResult
 {
+    public TailorSource Source { get; set; } = TailorSource.Description;
     public MatchingMode Mode { get; set; } = MatchingMode.Keyword;
     public string? Model { get; set; }
     public string? Notice { get; set; }

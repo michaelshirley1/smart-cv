@@ -11,13 +11,14 @@ import Chip from '../../../../components/chip';
 import './styles.scss';
 
 const JobDescription: React.FC<JobDescriptionProps> = ({ tags }) => {
-    const { draft, setDraft, applied, result, loading, tailor, clear } = useTailoring();
+    const { draft, setDraft, applied, result, loading, tailor, clear, source } = useTailoring();
+    const usingTags = source?.kind === 'tags';
     const { settings } = useProfileContext();
     const [ollamaModels, setOllamaModels] = useState(0);
     const changed = applied !== null && draft.trim() !== applied;
     const colourOf = (tagId: number) => tags.find(tag => tag.id === tagId)?.colour ?? '';
     const usingKeywords = settings?.matchingMode !== 'ollama';
-    const canTailor = draft.trim().length > 0 && !loading && (applied === null || changed);
+    const canTailor = draft.trim().length > 0 && !loading && (applied === null || changed || usingTags);
 
     useEffect(() => {
         if (!settings || !usingKeywords) return;
@@ -51,8 +52,13 @@ const JobDescription: React.FC<JobDescriptionProps> = ({ tags }) => {
                     Ollama is running with {ollamaModels} model{ollamaModels === 1 ? '' : 's'}. Turn it on in Settings for matching by meaning.
                 </p>
             )}
+            {usingTags && (
+                <p className="job-description-hint">
+                    The CV is tailored to the tags chosen in the top bar. Tailoring by a job description will replace them.
+                </p>
+            )}
             {result?.notice && <p className="job-description-notice" role="status">{result.notice}</p>}
-            {result && (
+            {result && !usingTags && (
                 <div className="job-description-result">
                     <span className="job-description-result-label">Matched tags</span>
                     {result.matchedTags.length === 0 ? (

@@ -73,6 +73,15 @@ public class ProfileController : ControllerBase
         return _profileFactory.SaveJobDescription(id, request).ToActionResult();
     }
 
+    [HttpPut("{id:int}/tailor-tags")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public IActionResult SaveTailorTags(int id, [FromBody] TagLinksRequest request)
+    {
+        return _profileFactory.SaveTailorTags(id, request).ToActionResult();
+    }
+
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

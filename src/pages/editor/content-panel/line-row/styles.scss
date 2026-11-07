@@ -9,7 +9,8 @@
     border-radius: $radius;
 
     &:hover,
-    &:focus-within {
+    &:focus-within,
+    &--active {
         border-color: $colour-border;
         background: $colour-background;
     }
@@ -20,6 +21,36 @@
 
     &--out &-text {
         color: $colour-text-muted;
+    }
+
+    &-details {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: $space-2;
+
+        .tag-input {
+            flex: 1 1 160px;
+        }
+    }
+
+    &-priority {
+        flex: 0 0 104px;
+
+        .select-label {
+            font-size: 0.75rem;
+        }
+
+        .select-input {
+            height: $control-height-small;
+            font-size: $font-size-small;
+        }
+    }
+
+    &-summary {
+        padding: 0 2px;
+        color: $colour-text-muted;
+        font-size: 0.75rem;
     }
 
     &-status {
@@ -60,6 +91,7 @@
 
     &:hover &-actions,
     &:focus-within &-actions,
+    &--active &-actions,
     &--always-on &-actions,
     &--hidden &-actions {
         opacity: 1;

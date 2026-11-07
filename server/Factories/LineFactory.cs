@@ -43,6 +43,7 @@ public class LineFactory : ILineFactory
             EntryId = request.EntryId,
             Text = request.Text.Trim(),
             Override = request.Override,
+            Priority = request.Priority,
         });
         if (request.TagIds.Count > 0) _lineRepository.SetTags(lineId, request.TagIds);
 
@@ -59,6 +60,7 @@ public class LineFactory : ILineFactory
             Id = id,
             Text = request.Text.Trim(),
             Override = request.Override,
+            Priority = request.Priority,
         });
 
         return _profileFactory.GetById(profileId.Value);

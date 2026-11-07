@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { emptyFit, FitState, TailoringContextValue, TailoringProviderProps } from './model';
+import { emptyFit, FitState, TailoringContextValue, TailoringProviderProps, TailoringSource } from './model';
 import { lineStatusFor, sectionStatusFor } from './status';
 import { CvView, TailorResult } from '../model';
 import { useProfileContext } from '../profile-context';
@@ -22,6 +22,7 @@ export const TailoringProvider: React.FC<TailoringProviderProps> = ({ children }
     const { profile, settings, attempt } = useProfileContext();
     const [draft, setDraft] = useState('');
     const [applied, setApplied] = useState<string | null>(null);
+    const [chosenTagIds, setChosenTagIds] = useState<number[]>([]);
     const [result, setResult] = useState<TailorResult | null>(null);
     const [loading, setLoading] = useState(false);
     const [view, setView] = useState<CvView>('all');
@@ -32,25 +33,35 @@ export const TailoringProvider: React.FC<TailoringProviderProps> = ({ children }
 
     const contentKey = profile ? JSON.stringify([profile.id, profile.sections, profile.tags]) : '';
     const matchingKey = settings ? JSON.stringify([settings.matchingMode, settings.ollamaUrl, settings.ollamaModel]) : '';
+    const tagIds = chosenTagIds.filter(id => profile?.tags.some(tag => tag.id === id && !tag.isAlwaysOn));
 
-    const run = async (description: string) => {
+    const sourceFor = (ids: number[], description: string | null): TailoringSource | null =>
+        ids.length > 0 ? { kind: 'tags', tagIds: ids } : description ? { kind: 'description', text: description } : null;
+
+    const source = sourceFor(tagIds, applied);
+
+    const run = async (next: TailoringSource) => {
         if (!profile) return;
         const id = ++request.current;
         setLoading(true);
         await attempt(async () => {
-            const next = await api.tailor(profile.id, description);
-            if (id === request.current) setResult(next);
+            const outcome = await api.tailor(profile.id, next.kind === 'tags' ? { tagIds: next.tagIds } : { jobDescription: next.text });
+            if (id === request.current) setResult(outcome);
         }, 'Could not tailor the CV.');
         if (id === request.current) setLoading(false);
     };
 
-    const reset = () => {
-        request.current++;
-        setApplied(null);
-        setResult(null);
-        setLoading(false);
-        setView('all');
-        setFitState(emptyFit);
+    const apply = (next: TailoringSource | null) => {
+        if (!next) {
+            request.current++;
+            setResult(null);
+            setLoading(false);
+            setView('all');
+            setFitState(emptyFit);
+            return;
+        }
+        setView('tailored');
+        run(next);
     };
 
     useEffect(() => {
@@ -58,38 +69,50 @@ export const TailoringProvider: React.FC<TailoringProviderProps> = ({ children }
 
         if (loadedProfileId.current !== profile.id) {
             loadedProfileId.current = profile.id;
-            const saved = profile.jobDescription.trim();
-            reset();
-            setDraft(saved);
-            if (saved) {
-                setApplied(saved);
-                setView('tailored');
-                run(saved);
-            }
+            const savedDescription = profile.jobDescription.trim();
+            setDraft(savedDescription);
+            setApplied(savedDescription || null);
+            setChosenTagIds(profile.tailorTagIds);
+            setFitState(emptyFit);
+            apply(sourceFor(profile.tailorTagIds, savedDescription || null));
             return;
         }
 
-        if (applied === null) return;
-        const timer = window.setTimeout(() => run(applied), retailorDelay);
+        if (!source) return;
+        const timer = window.setTimeout(() => run(source), retailorDelay);
         return () => window.clearTimeout(timer);
     }, [contentKey, matchingKey]);
 
-    const persist = (description: string) => {
+    const saveDescription = (description: string) => {
         if (profile) attempt(() => api.saveJobDescription(profile.id, description).then(() => undefined), 'Could not save the job description.');
+    };
+
+    const saveTags = (ids: number[]) => {
+        if (profile) attempt(() => api.saveTailorTags(profile.id, ids).then(() => undefined), 'Could not save the chosen tags.');
+    };
+
+    const setTagIds = (ids: number[]) => {
+        setChosenTagIds(ids);
+        saveTags(ids);
+        apply(sourceFor(ids, applied));
     };
 
     const tailor = async () => {
         const description = draft.trim();
         if (!description) return;
         setApplied(description);
-        persist(description);
-        await run(description);
-        setView('tailored');
+        saveDescription(description);
+        if (tagIds.length > 0) {
+            setChosenTagIds([]);
+            saveTags([]);
+        }
+        apply({ kind: 'description', text: description });
     };
 
     const clear = () => {
-        reset();
-        persist('');
+        setApplied(null);
+        saveDescription('');
+        apply(sourceFor(tagIds, null));
     };
 
     const isTailored = view === 'tailored' && result !== null;
@@ -98,6 +121,9 @@ export const TailoringProvider: React.FC<TailoringProviderProps> = ({ children }
         draft,
         setDraft,
         applied,
+        tagIds,
+        setTagIds,
+        source,
         result,
         loading,
         view,

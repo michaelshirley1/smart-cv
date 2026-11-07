@@ -1,4 +1,4 @@
-import { Entry, Line, Section, SectionKind } from '../model';
+import { Entry, Line, normalPriority, Section, SectionKind } from '../model';
 import { CvLineVariant } from './model';
 
 const sentences = [
@@ -22,6 +22,7 @@ const line = (entryId: number, text: string, sortOrder: number): Line => ({
     text,
     sortOrder,
     override: 'none',
+    priority: normalPriority,
     tagIds: [],
 });
 
@@ -49,6 +50,7 @@ const section = (title: string, kind: SectionKind, build: (id: number) => Entry[
         sortOrder: 0,
         maxLines: 5,
         isHidden: false,
+        priority: normalPriority,
         tagIds: [],
         entries: build(id),
     };

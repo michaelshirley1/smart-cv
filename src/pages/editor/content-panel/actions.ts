@@ -1,5 +1,5 @@
 import { useProfileContext } from '../profile-context';
-import { Entry, EntryRequest, Line, LineRequest, ProfileDetail, ProfileRequest, Section, SectionKind, SectionRequest, Tag, TagRequest } from '../model';
+import { Entry, EntryRequest, Line, LineRequest, normalPriority, ProfileDetail, ProfileRequest, Section, SectionKind, SectionRequest, Tag, TagRequest } from '../model';
 import * as api from '../api';
 
 export const useContentActions = () => {
@@ -11,7 +11,7 @@ export const useContentActions = () => {
             mutate(() => api.updateProfile(profileId, request), 'Could not save your details.'),
 
         createSection: (title: string, kind: SectionKind) =>
-            mutate(() => api.createSection({ profileId, title, kind, maxLines: 5, isHidden: false }), 'Could not add the section.'),
+            mutate(() => api.createSection({ profileId, title, kind, maxLines: 5, isHidden: false, priority: normalPriority }), 'Could not add the section.'),
         saveSection: (section: Section, changes: Partial<SectionRequest>) =>
             mutate(() => api.updateSection(section.id, { ...api.toSectionRequest(section), ...changes }), 'Could not save the section.'),
         deleteSection: (id: number) =>
@@ -31,7 +31,7 @@ export const useContentActions = () => {
             mutate(() => api.reorderEntries(sectionId, ids), 'Could not reorder the entries.'),
 
         createLine: (entryId: number, text: string) =>
-            mutate(() => api.createLine({ entryId, text, override: 'none', tagIds: [] }), 'Could not add the line.'),
+            mutate(() => api.createLine({ entryId, text, override: 'none', priority: normalPriority, tagIds: [] }), 'Could not add the line.'),
         saveLine: (line: Line, changes: Partial<LineRequest>) =>
             mutate(() => api.updateLine(line.id, { ...api.toLineRequest(line), ...changes }), 'Could not save the line.'),
         deleteLine: (id: number) =>

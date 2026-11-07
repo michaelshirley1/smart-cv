@@ -18,7 +18,7 @@ public interface ISectionRepository
 
 public class SectionRepository : ISectionRepository
 {
-    private const string Columns = "Id, ProfileId, Title, Kind, SortOrder, MaxLines, IsHidden";
+    private const string Columns = "Id, ProfileId, Title, Kind, SortOrder, MaxLines, IsHidden, Priority";
 
     private readonly IDbConnectionFactory _connectionFactory;
     private readonly ILogger<SectionRepository> _logger;
@@ -75,14 +75,15 @@ public class SectionRepository : ISectionRepository
         try
         {
             const string sql = """
-                INSERT INTO Sections (ProfileId, Title, Kind, SortOrder, MaxLines, IsHidden)
+                INSERT INTO Sections (ProfileId, Title, Kind, SortOrder, MaxLines, IsHidden, Priority)
                 VALUES (
                     @ProfileId,
                     @Title,
                     @Kind,
                     (SELECT COALESCE(MAX(SortOrder) + 1, 0) FROM Sections WHERE ProfileId = @ProfileId),
                     @MaxLines,
-                    @IsHidden)
+                    @IsHidden,
+                    @Priority)
                 RETURNING Id
                 """;
             using var connection = _connectionFactory.Create();
@@ -93,6 +94,7 @@ public class SectionRepository : ISectionRepository
                 Kind = section.Kind.ToString().ToLowerInvariant(),
                 section.MaxLines,
                 section.IsHidden,
+                section.Priority,
             });
             return id;
         }
@@ -112,7 +114,8 @@ public class SectionRepository : ISectionRepository
                 SET Title = @Title,
                     Kind = @Kind,
                     MaxLines = @MaxLines,
-                    IsHidden = @IsHidden
+                    IsHidden = @IsHidden,
+                    Priority = @Priority
                 WHERE Id = @Id
                 """;
             using var connection = _connectionFactory.Create();
@@ -123,6 +126,7 @@ public class SectionRepository : ISectionRepository
                 Kind = section.Kind.ToString().ToLowerInvariant(),
                 section.MaxLines,
                 section.IsHidden,
+                section.Priority,
             });
             return affected;
         }

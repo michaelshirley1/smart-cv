@@ -51,6 +51,9 @@ public class SectionRequest
     public int MaxLines { get; set; } = 5;
 
     public bool IsHidden { get; set; }
+
+    [Range(Priorities.Lowest, Priorities.Highest)]
+    public int Priority { get; set; } = Priorities.Normal;
 }
 
 public class CreateSectionRequest : SectionRequest
@@ -86,6 +89,9 @@ public class LineRequest
     public string Text { get; set; } = string.Empty;
 
     public LineOverride Override { get; set; } = LineOverride.None;
+
+    [Range(Priorities.Lowest, Priorities.Highest)]
+    public int Priority { get; set; } = Priorities.Normal;
 }
 
 public class CreateLineRequest : LineRequest

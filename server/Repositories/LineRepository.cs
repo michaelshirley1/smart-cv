@@ -20,7 +20,7 @@ public interface ILineRepository
 
 public class LineRepository : ILineRepository
 {
-    private const string Columns = "l.Id, l.EntryId, l.Text, l.SortOrder, l.Override";
+    private const string Columns = "l.Id, l.EntryId, l.Text, l.SortOrder, l.Override, l.Priority";
 
     private readonly IDbConnectionFactory _connectionFactory;
     private readonly ILogger<LineRepository> _logger;
@@ -122,12 +122,13 @@ public class LineRepository : ILineRepository
         try
         {
             const string sql = """
-                INSERT INTO Lines (EntryId, Text, SortOrder, Override)
+                INSERT INTO Lines (EntryId, Text, SortOrder, Override, Priority)
                 VALUES (
                     @EntryId,
                     @Text,
                     (SELECT COALESCE(MAX(SortOrder) + 1, 0) FROM Lines WHERE EntryId = @EntryId),
-                    @Override)
+                    @Override,
+                    @Priority)
                 RETURNING Id
                 """;
             using var connection = _connectionFactory.Create();
@@ -136,6 +137,7 @@ public class LineRepository : ILineRepository
                 line.EntryId,
                 line.Text,
                 Override = line.Override.ToString().ToLowerInvariant(),
+                line.Priority,
             });
             return id;
         }
@@ -153,7 +155,8 @@ public class LineRepository : ILineRepository
             const string sql = """
                 UPDATE Lines
                 SET Text = @Text,
-                    Override = @Override
+                    Override = @Override,
+                    Priority = @Priority
                 WHERE Id = @Id
                 """;
             using var connection = _connectionFactory.Create();
@@ -162,6 +165,7 @@ public class LineRepository : ILineRepository
                 line.Id,
                 line.Text,
                 Override = line.Override.ToString().ToLowerInvariant(),
+                line.Priority,
             });
             return affected;
         }

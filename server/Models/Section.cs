@@ -19,6 +19,7 @@ public class Section
     public int SortOrder { get; set; }
     public int MaxLines { get; set; } = 5;
     public bool IsHidden { get; set; }
+    public int Priority { get; set; } = Priorities.Normal;
     public List<int> TagIds { get; set; } = [];
     public List<Entry> Entries { get; set; } = [];
 }

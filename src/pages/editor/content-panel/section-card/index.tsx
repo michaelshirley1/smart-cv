@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { lineCountLabel, SectionCardProps } from './model';
-import { sectionKindOptions, withAlwaysOn } from '../model';
+import { priorityOptions, sectionKindOptions, withAlwaysOn } from '../model';
 import { hasEntryHeader } from '../../cv-wrapper/model';
 import { useContentActions } from '../actions';
 import { useTailoring } from '../../tailoring-context';
@@ -98,6 +98,13 @@ const SectionCard: React.FC<SectionCardProps> = ({ section, tagOptions, alwaysOn
                             value={maxLines}
                             onChange={setMaxLines}
                             onBlur={saveMaxLines}
+                        />
+                        <Select
+                            className="section-card-priority"
+                            label="Priority"
+                            value={String(section.priority)}
+                            options={priorityOptions}
+                            onChange={value => actions.saveSection(section, { priority: Number(value) })}
                         />
                     </div>
                     <div className="section-card-tags">

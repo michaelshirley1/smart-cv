@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { entryFields, EntryCardProps } from './model';
 import { useContentActions } from '../actions';
 import { useReorder } from '../../../../hooks/useReorder';
+import { useActiveLine } from '../active-line-context';
 import LineRow from '../line-row';
 import DragHandle from '../../../../components/drag-handle';
 import EditableText from '../../../../components/editable-text';
@@ -12,10 +13,19 @@ import './styles.scss';
 
 const EntryCard: React.FC<EntryCardProps> = ({ entry, showHeader, tagOptions, alwaysOn, handleProps }) => {
     const actions = useContentActions();
+    const { setActiveLineId } = useActiveLine();
     const [confirmDelete, setConfirmDelete] = useState(false);
     const lineIds = entry.lines.map(line => line.id);
     const reorder = useReorder(`line-${entry.id}`, lineIds, ids => actions.reorderLines(entry.id, ids));
     const name = entry.heading || 'this entry';
+
+    const addLine = async (text: string) => {
+        if (!text) return;
+        const updated = await actions.createLine(entry.id, text);
+        const lines = updated?.sections.flatMap(section => section.entries).find(candidate => candidate.id === entry.id)?.lines ?? [];
+        const created = lines.find(line => !lineIds.includes(line.id));
+        if (created) setActiveLineId(created.id);
+    };
 
     const remove = () => (entry.lines.length > 0 ? setConfirmDelete(true) : actions.deleteEntry(entry.id));
 
@@ -59,7 +69,7 @@ const EntryCard: React.FC<EntryCardProps> = ({ entry, showHeader, tagOptions, al
                 value=""
                 placeholder="+ Add line"
                 multiline
-                onSave={text => text && actions.createLine(entry.id, text)}
+                onSave={addLine}
             />
 
             {confirmDelete && (

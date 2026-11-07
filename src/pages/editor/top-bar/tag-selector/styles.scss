@@ -1,0 +1,118 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.tag-selector {
+    position: relative;
+
+    &-trigger {
+        display: flex;
+        align-items: center;
+        gap: $space-2;
+        max-width: $menu-width + $space-6;
+        height: $control-height;
+        padding: 0 $space-2;
+        border: $border-strong;
+        border-radius: $radius;
+        background: $colour-background;
+        color: $colour-text;
+        cursor: pointer;
+
+        &:hover {
+            background: $colour-hover;
+        }
+
+        &:focus-visible {
+            outline: $focus-ring;
+            outline-offset: 1px;
+        }
+
+        &--active {
+            border-color: $colour-accent;
+        }
+
+        .icon {
+            color: $colour-text-muted;
+        }
+    }
+
+    &-label {
+        font-weight: $font-weight-strong;
+    }
+
+    &-summary {
+        overflow: hidden;
+        color: $colour-text-muted;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &-trigger--active &-summary {
+        color: $colour-text;
+    }
+
+    &-panel {
+        position: absolute;
+        top: calc(100% + #{$space-1});
+        left: 0;
+        z-index: $z-menu;
+        display: flex;
+        flex-direction: column;
+        gap: $space-3;
+        width: $menu-width + $space-6;
+        padding: $space-3;
+        border: $border-strong;
+        border-radius: $radius;
+        background: $colour-background;
+    }
+
+    &-title {
+        font-weight: $font-weight-strong;
+    }
+
+    &-hint {
+        margin-top: -$space-2;
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+        line-height: 1.45;
+    }
+
+    &-list {
+        display: flex;
+        flex-direction: column;
+        gap: $space-1;
+        list-style: none;
+    }
+
+    &-item {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: $space-2;
+        padding: 2px $space-1;
+        border: $border;
+        border-radius: $radius;
+
+        &--drop-before {
+            @include drop-indicator(before);
+        }
+
+        &--drop-after {
+            @include drop-indicator(after);
+        }
+    }
+
+    &-rank {
+        width: 1.5em;
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+        text-align: center;
+    }
+
+    &-remove {
+        margin-left: auto;
+    }
+
+    &-clear {
+        align-self: flex-start;
+    }
+}

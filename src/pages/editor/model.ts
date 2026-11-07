@@ -14,6 +14,7 @@ export interface Line {
     text: string;
     sortOrder: number;
     override: LineOverride;
+    priority: number;
     tagIds: number[];
 }
 
@@ -36,6 +37,7 @@ export interface Section {
     sortOrder: number;
     maxLines: number;
     isHidden: boolean;
+    priority: number;
     tagIds: number[];
     entries: Entry[];
 }
@@ -69,6 +71,7 @@ export interface Profile {
 export interface ProfileDetail extends Profile {
     tags: Tag[];
     sections: Section[];
+    tailorTagIds: number[];
 }
 
 export interface ProfileRequest {
@@ -88,6 +91,7 @@ export interface SectionRequest {
     kind: SectionKind;
     maxLines: number;
     isHidden: boolean;
+    priority: number;
 }
 
 export interface EntryRequest {
@@ -100,6 +104,7 @@ export interface EntryRequest {
 export interface LineRequest {
     text: string;
     override: LineOverride;
+    priority: number;
 }
 
 export interface CreateSectionRequest extends SectionRequest {
@@ -114,6 +119,8 @@ export interface CreateLineRequest extends LineRequest {
     entryId: number;
     tagIds: number[];
 }
+
+export const normalPriority = 3;
 
 export type TagColour = '' | 'blue' | 'green' | 'amber' | 'red' | 'purple' | 'teal' | 'pink';
 
@@ -165,11 +172,20 @@ export interface LineResult {
     entryId: number;
     sectionId: number;
     score: number;
+    priority: number;
     included: boolean;
     decision: LineDecision;
 }
 
+export type TailorSource = 'description' | 'tags';
+
+export interface TailorRequest {
+    jobDescription?: string;
+    tagIds?: number[];
+}
+
 export interface TailorResult {
+    source: TailorSource;
     mode: MatchingMode;
     model: string | null;
     notice: string | null;

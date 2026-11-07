@@ -5,6 +5,7 @@ export interface JobDescriptionProps {
 }
 
 export const modeLabel = (result: TailorResult | null, settings: AppSettings | null) => {
+    if (result?.source === 'tags') return 'Tailored to chosen tags';
     if (result) return result.mode === 'ollama' ? `Ollama · ${result.model}` : 'Keyword matching';
     if (settings?.matchingMode === 'ollama') return `Ollama · ${settings.ollamaModel || 'no model chosen'}`;
     return 'Keyword matching';

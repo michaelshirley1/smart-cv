@@ -21,4 +21,5 @@ public class ProfileDetail : Profile
 {
     public List<Tag> Tags { get; set; } = [];
     public List<Section> Sections { get; set; } = [];
+    public List<int> TailorTagIds { get; set; } = [];
 }

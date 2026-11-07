@@ -46,6 +46,7 @@ public class SectionFactory : ISectionFactory
             Kind = request.Kind,
             MaxLines = request.MaxLines,
             IsHidden = request.IsHidden,
+            Priority = request.Priority,
         });
         _entryRepository.Create(new Entry { SectionId = sectionId });
 
@@ -64,6 +65,7 @@ public class SectionFactory : ISectionFactory
             Kind = request.Kind,
             MaxLines = request.MaxLines,
             IsHidden = request.IsHidden,
+            Priority = request.Priority,
         });
 
         return _profileFactory.GetById(section.ProfileId);

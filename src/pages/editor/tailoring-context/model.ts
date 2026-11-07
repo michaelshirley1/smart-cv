@@ -16,10 +16,15 @@ export interface LineStatus {
     included: boolean;
 }
 
+export type TailoringSource = { kind: 'tags'; tagIds: number[] } | { kind: 'description'; text: string };
+
 export interface TailoringContextValue {
     draft: string;
     setDraft: (value: string) => void;
     applied: string | null;
+    tagIds: number[];
+    setTagIds: (tagIds: number[]) => void;
+    source: TailoringSource | null;
     result: TailorResult | null;
     loading: boolean;
     view: CvView;

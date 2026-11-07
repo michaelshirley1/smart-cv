@@ -19,6 +19,7 @@ import {
     SectionRequest,
     Tag,
     TagRequest,
+    TailorRequest,
     TailorResult,
     Template,
     TemplateRequest,
@@ -118,8 +119,11 @@ export const deleteTemplate = (name: string) =>
 export const getFonts = () =>
     client.get<string[]>('/font').then(r => r.data);
 
-export const tailor = (profileId: number, jobDescription: string) =>
-    client.post<TailorResult>('/tailor', { profileId, jobDescription }).then(r => r.data);
+export const tailor = (profileId: number, request: TailorRequest) =>
+    client.post<TailorResult>('/tailor', { profileId, ...request }).then(r => r.data);
+
+export const saveTailorTags = (id: number, tagIds: number[]) =>
+    client.put(`/profile/${id}/tailor-tags`, { tagIds });
 
 export const exportPdf = (request: ExportRequest) =>
     client.post<ExportResult>('/export/pdf', request).then(r => r.data);
@@ -150,6 +154,7 @@ export const toSectionRequest = (section: Section): SectionRequest => ({
     kind: section.kind,
     maxLines: section.maxLines,
     isHidden: section.isHidden,
+    priority: section.priority,
 });
 
 export const toEntryRequest = (entry: Entry): EntryRequest => ({
@@ -162,6 +167,7 @@ export const toEntryRequest = (entry: Entry): EntryRequest => ({
 export const toLineRequest = (line: Line): LineRequest => ({
     text: line.text,
     override: line.override,
+    priority: line.priority,
 });
 
 export const toTagRequest = (tag: Tag): TagRequest => ({

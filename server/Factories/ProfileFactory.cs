@@ -13,6 +13,7 @@ public interface IProfileFactory
     FactoryResult<ProfileDetail> Duplicate(int id);
     FactoryResult<ProfileDetail> Restore(int id, ProfileDetail snapshot);
     FactoryResult SaveJobDescription(int id, JobDescriptionRequest request);
+    FactoryResult SaveTailorTags(int id, TagLinksRequest request);
     FactoryResult Delete(int id);
 }
 
@@ -83,6 +84,7 @@ public class ProfileFactory : IProfileFactory
             UpdatedAt = profile.UpdatedAt,
             Tags = _tagRepository.GetByProfileId(id).ToList(),
             Sections = sections,
+            TailorTagIds = _tagRepository.GetTailorTagIds(id).ToList(),
         });
     }
 
@@ -134,6 +136,7 @@ public class ProfileFactory : IProfileFactory
 
         var tagIds = original.Tags.ToDictionary(tag => tag.Id, tag => _tagRepository.Create(CopyOf(tag, copyId)));
         CopySections(original.Sections, copyId, tagIds);
+        _tagRepository.SetTailorTags(copyId, original.TailorTagIds.Where(tagIds.ContainsKey).Select(tagId => tagIds[tagId]).ToList());
 
         return GetById(copyId);
     }
@@ -167,6 +170,7 @@ public class ProfileFactory : IProfileFactory
             tag => tag.Id,
             tag => tag.IsAlwaysOn ? alwaysOn.Id : _tagRepository.Create(CopyOf(tag, id)));
         CopySections(snapshot.Sections, id, tagIds);
+        _tagRepository.SetTailorTags(id, snapshot.TailorTagIds.Where(tagIds.ContainsKey).Select(tagId => tagIds[tagId]).ToList());
 
         return GetById(id);
     }
@@ -176,6 +180,18 @@ public class ProfileFactory : IProfileFactory
         return _profileRepository.SaveJobDescription(id, request.JobDescription.Trim()) > 0
             ? FactoryResult.Success()
             : FactoryResult.NotFound($"Profile {id} not found.");
+    }
+
+    public FactoryResult SaveTailorTags(int id, TagLinksRequest request)
+    {
+        if (_profileRepository.GetById(id) is null) return FactoryResult.NotFound($"Profile {id} not found.");
+
+        var allowed = _tagRepository.GetByProfileId(id).Where(tag => !tag.IsAlwaysOn).Select(tag => tag.Id).ToHashSet();
+        var tagIds = request.TagIds.Distinct().ToList();
+        if (!tagIds.All(allowed.Contains)) return FactoryResult.Invalid("Choose tags from this profile, other than Always on.");
+
+        _tagRepository.SetTailorTags(id, tagIds);
+        return FactoryResult.Success();
     }
 
     public FactoryResult Delete(int id)
@@ -198,6 +214,7 @@ public class ProfileFactory : IProfileFactory
                 Kind = section.Kind,
                 MaxLines = section.MaxLines,
                 IsHidden = section.IsHidden,
+                Priority = section.Priority,
             });
             _sectionRepository.SetTags(sectionId, Mapped(section.TagIds));
 
@@ -219,6 +236,7 @@ public class ProfileFactory : IProfileFactory
                         EntryId = entryId,
                         Text = line.Text,
                         Override = line.Override,
+                        Priority = line.Priority,
                     });
                     _lineRepository.SetTags(lineId, Mapped(line.TagIds));
                 }

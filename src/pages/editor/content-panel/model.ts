@@ -13,6 +13,17 @@ export const sectionKindOptions: SelectOption<SectionKind>[] = [
     { value: 'custom', label: 'List' },
 ];
 
+export const priorityOptions: SelectOption<string>[] = [
+    { value: '5', label: 'Highest' },
+    { value: '4', label: 'High' },
+    { value: '3', label: 'Normal' },
+    { value: '2', label: 'Low' },
+    { value: '1', label: 'Lowest' },
+];
+
+export const priorityLabel = (priority: number) =>
+    priorityOptions.find(option => option.value === String(priority))?.label ?? 'Normal';
+
 export const tagColours: TagColour[] = ['', 'blue', 'green', 'amber', 'red', 'purple', 'teal', 'pink'];
 
 export const colourClass = (colour: string) => colour || 'default';

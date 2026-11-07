@@ -10,6 +10,13 @@ public interface ISchemaRepository
 
 public class SchemaRepository : ISchemaRepository
 {
+    private static readonly (string Table, string Column, string Definition)[] AddedColumns =
+    [
+        ("Profiles", "JobDescription", "TEXT NOT NULL DEFAULT ''"),
+        ("Sections", "Priority", "INTEGER NOT NULL DEFAULT 3"),
+        ("Lines", "Priority", "INTEGER NOT NULL DEFAULT 3"),
+    ];
+
     private readonly IDbConnectionFactory _connectionFactory;
     private readonly ILogger<SchemaRepository> _logger;
 
@@ -47,7 +54,8 @@ public class SchemaRepository : ISchemaRepository
                     Kind TEXT NOT NULL,
                     SortOrder INTEGER NOT NULL DEFAULT 0,
                     MaxLines INTEGER NOT NULL DEFAULT 5,
-                    IsHidden INTEGER NOT NULL DEFAULT 0
+                    IsHidden INTEGER NOT NULL DEFAULT 0,
+                    Priority INTEGER NOT NULL DEFAULT 3
                 );
 
                 CREATE TABLE IF NOT EXISTS Entries (
@@ -65,7 +73,8 @@ public class SchemaRepository : ISchemaRepository
                     EntryId INTEGER NOT NULL REFERENCES Entries (Id) ON DELETE CASCADE,
                     Text TEXT NOT NULL DEFAULT '',
                     SortOrder INTEGER NOT NULL DEFAULT 0,
-                    Override TEXT NOT NULL DEFAULT 'none'
+                    Override TEXT NOT NULL DEFAULT 'none',
+                    Priority INTEGER NOT NULL DEFAULT 3
                 );
 
                 CREATE TABLE IF NOT EXISTS Tags (
@@ -88,6 +97,13 @@ public class SchemaRepository : ISchemaRepository
                     LineId INTEGER NOT NULL REFERENCES Lines (Id) ON DELETE CASCADE,
                     TagId INTEGER NOT NULL REFERENCES Tags (Id) ON DELETE CASCADE,
                     PRIMARY KEY (LineId, TagId)
+                );
+
+                CREATE TABLE IF NOT EXISTS ProfileTailorTags (
+                    ProfileId INTEGER NOT NULL REFERENCES Profiles (Id) ON DELETE CASCADE,
+                    TagId INTEGER NOT NULL REFERENCES Tags (Id) ON DELETE CASCADE,
+                    SortOrder INTEGER NOT NULL DEFAULT 0,
+                    PRIMARY KEY (ProfileId, TagId)
                 );
 
                 CREATE TABLE IF NOT EXISTS Settings (
@@ -114,16 +130,16 @@ public class SchemaRepository : ISchemaRepository
                 """;
             const string columnSql = """
                 SELECT COUNT(*)
-                FROM pragma_table_info('Profiles')
-                WHERE name = 'JobDescription'
-                """;
-            const string addColumnSql = """
-                ALTER TABLE Profiles
-                ADD COLUMN JobDescription TEXT NOT NULL DEFAULT ''
+                FROM pragma_table_info(@Table)
+                WHERE name = @Column
                 """;
             using var connection = _connectionFactory.Create();
             var affected = connection.Execute(sql);
-            if (connection.ExecuteScalar<int>(columnSql) == 0) affected += connection.Execute(addColumnSql);
+            foreach (var (table, column, definition) in AddedColumns)
+            {
+                if (connection.ExecuteScalar<int>(columnSql, new { Table = table, Column = column }) == 0)
+                    affected += connection.Execute($"ALTER TABLE {table} ADD COLUMN {column} {definition}");
+            }
             return affected;
         }
         catch (SqliteException ex)

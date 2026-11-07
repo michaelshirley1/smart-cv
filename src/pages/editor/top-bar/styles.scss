@@ -10,6 +10,17 @@
     border-bottom: $border;
     background: $colour-background;
 
+    &-brand {
+        display: flex;
+        align-items: center;
+        gap: $space-2;
+    }
+
+    &-logo {
+        width: $logo-size;
+        height: $logo-size;
+    }
+
     &-title {
         font-size: $font-size-large;
         font-weight: $font-weight-strong;

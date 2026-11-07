@@ -31,20 +31,27 @@ public class TailoringFactory : ITailoringFactory
         if (profileResult.Value is null) return FactoryResult<TailorResult>.NotFound(profileResult.Error);
 
         var profile = profileResult.Value;
-        var text = KeywordMatcher.Normalise(request.JobDescription);
         var alwaysOnId = profile.Tags.FirstOrDefault(tag => tag.IsAlwaysOn)?.Id;
-
-        var matches = profile.Tags
-            .Where(tag => !tag.IsAlwaysOn)
-            .Select(tag => KeywordMatcher.Match(tag, text))
-            .Where(match => match.Score > 0)
-            .OrderByDescending(match => match.Score)
-            .ThenBy(match => match.Name, StringComparer.OrdinalIgnoreCase)
+        var chosenTags = request.TagIds
+            .Distinct()
+            .Select(id => profile.Tags.FirstOrDefault(tag => tag.Id == id && !tag.IsAlwaysOn))
+            .OfType<Tag>()
             .ToList();
+
+        if (chosenTags.Count == 0 && string.IsNullOrWhiteSpace(request.JobDescription))
+            return FactoryResult<TailorResult>.Invalid("Paste a job description or choose some tags.");
+
+        var byTags = chosenTags.Count > 0;
+        var matches = byTags ? WeightByOrder(chosenTags) : MatchKeywords(profile, KeywordMatcher.Normalise(request.JobDescription));
         var tagScores = matches.ToDictionary(match => match.TagId, match => match.Score);
 
-        var result = new TailorResult { Mode = MatchingMode.Keyword, MatchedTags = matches };
-        var modelScores = await ModelScoresAsync(profile, request.JobDescription, alwaysOnId, result, cancellationToken);
+        var result = new TailorResult
+        {
+            Source = byTags ? TailorSource.Tags : TailorSource.Description,
+            Mode = MatchingMode.Keyword,
+            MatchedTags = matches,
+        };
+        var modelScores = byTags ? null : await ModelScoresAsync(profile, request.JobDescription, alwaysOnId, result, cancellationToken);
 
         foreach (var section in profile.Sections)
         {
@@ -58,9 +65,21 @@ public class TailoringFactory : ITailoringFactory
             }
         }
 
-        result.TrimOrder = TrimOrder(result.Lines);
+        result.TrimOrder = TrimOrder(result.Lines, profile.Sections.ToDictionary(section => section.Id, section => section.Priority));
         return FactoryResult<TailorResult>.Success(result);
     }
+
+    private static List<TagMatch> WeightByOrder(IReadOnlyList<Tag> tags) =>
+        tags.Select((tag, index) => new TagMatch { TagId = tag.Id, Name = tag.Name, Score = tags.Count - index }).ToList();
+
+    private static List<TagMatch> MatchKeywords(ProfileDetail profile, string text) =>
+        profile.Tags
+            .Where(tag => !tag.IsAlwaysOn)
+            .Select(tag => KeywordMatcher.Match(tag, text))
+            .Where(match => match.Score > 0)
+            .OrderByDescending(match => match.Score)
+            .ThenBy(match => match.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
     private async Task<Dictionary<int, int>?> ModelScoresAsync(ProfileDetail profile, string jobDescription, int? alwaysOnId, TailorResult result, CancellationToken cancellationToken)
     {
@@ -161,6 +180,7 @@ public class TailoringFactory : ITailoringFactory
                 EntryId = entry.Id,
                 SectionId = section.Id,
                 Score = score,
+                Priority = line.Priority,
                 Decision = decision,
                 Included = decision == LineDecision.AlwaysOn,
             };
@@ -170,9 +190,12 @@ public class TailoringFactory : ITailoringFactory
 
         var slots = Math.Max(0, section.MaxLines - lines.Count(line => line.Decision == LineDecision.AlwaysOn));
         var candidates = lines.Where(line => line.Decision == LineDecision.Matched)
-            .OrderByDescending(line => line.Score)
+            .OrderByDescending(line => line.Priority)
+            .ThenByDescending(line => line.Score)
             .ThenBy(lines.IndexOf)
-            .Concat(lines.Where(line => line.Decision == LineDecision.Untagged))
+            .Concat(lines.Where(line => line.Decision == LineDecision.Untagged)
+                .OrderByDescending(line => line.Priority)
+                .ThenBy(lines.IndexOf))
             .ToList();
 
         foreach (var (line, index) in candidates.Select((line, index) => (line, index)))
@@ -185,7 +208,8 @@ public class TailoringFactory : ITailoringFactory
         {
             var fallback = lines
                 .Where(line => line.Decision is LineDecision.Unmatched or LineDecision.OverLimit)
-                .OrderByDescending(line => line.Score)
+                .OrderByDescending(line => line.Priority)
+                .ThenByDescending(line => line.Score)
                 .ThenBy(lines.IndexOf)
                 .FirstOrDefault();
             if (fallback is not null)
@@ -198,22 +222,20 @@ public class TailoringFactory : ITailoringFactory
         return lines;
     }
 
-    private static List<int> TrimOrder(List<LineResult> lines)
+    private static List<int> TrimOrder(List<LineResult> lines, IReadOnlyDictionary<int, int> sectionPriorities)
     {
         var position = lines.Select((line, index) => (line.LineId, index)).ToDictionary(pair => pair.LineId, pair => pair.index);
-        var trimmable = lines.Where(line => line.Included && line.Decision != LineDecision.AlwaysOn).ToList();
-
-        var generic = trimmable
-            .Where(line => line.Decision is LineDecision.Untagged or LineDecision.Fallback)
-            .OrderByDescending(line => position[line.LineId]);
-        var matched = trimmable
-            .Where(line => line.Decision == LineDecision.Matched)
-            .OrderBy(line => line.Score)
+        var candidates = lines
+            .Where(line => line.Included && line.Decision != LineDecision.AlwaysOn)
+            .OrderBy(line => sectionPriorities[line.SectionId])
+            .ThenBy(line => line.Priority)
+            .ThenBy(line => line.Decision == LineDecision.Matched)
+            .ThenBy(line => line.Decision == LineDecision.Matched ? line.Score : 0)
             .ThenByDescending(line => position[line.LineId]);
 
         var remaining = lines.Where(line => line.Included).GroupBy(line => line.EntryId).ToDictionary(group => group.Key, group => group.Count());
         var order = new List<int>();
-        foreach (var line in generic.Concat(matched))
+        foreach (var line in candidates)
         {
             if (remaining[line.EntryId] <= 1) continue;
             remaining[line.EntryId]--;

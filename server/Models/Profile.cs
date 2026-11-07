@@ -12,6 +12,7 @@ public class Profile
     public string Phone { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
     public List<string> Links { get; set; } = [];
+    public string JobDescription { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

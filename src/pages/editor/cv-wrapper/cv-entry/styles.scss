@@ -1,4 +1,9 @@
 .cv-entry {
+    &-header {
+        break-inside: avoid;
+        break-after: avoid;
+    }
+
     &-row {
         display: flex;
         justify-content: space-between;

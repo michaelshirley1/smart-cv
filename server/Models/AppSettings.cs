@@ -18,7 +18,7 @@ public static class SettingKeys
 
 public class AppSettings
 {
-    public const string DefaultOllamaUrl = "http://localhost:11434";
+    public const string DefaultOllamaUrl = "http://127.0.0.1:11434";
 
     [Required]
     public MatchingMode MatchingMode { get; set; } = MatchingMode.Keyword;

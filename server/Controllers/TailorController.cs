@@ -19,8 +19,8 @@ public class TailorController : ControllerBase
     [ProducesResponseType(typeof(TailorResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    public IActionResult Tailor([FromBody] TailorRequest request)
+    public async Task<IActionResult> Tailor([FromBody] TailorRequest request, CancellationToken cancellationToken)
     {
-        return _tailoringFactory.Tailor(request).ToActionResult();
+        return (await _tailoringFactory.TailorAsync(request, cancellationToken)).ToActionResult();
     }
 }

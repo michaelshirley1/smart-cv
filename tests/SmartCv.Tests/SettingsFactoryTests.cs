@@ -1,14 +1,11 @@
-using Microsoft.Extensions.Logging.Abstractions;
 using SmartCv.Factories;
 using SmartCv.Models;
-using SmartCv.Repositories;
 
 namespace SmartCv.Tests;
 
 public class SettingsFactoryTests
 {
-    private static SettingsFactory CreateFactory(TestDatabase database) =>
-        new(new SettingsRepository(database.Connections, NullLogger<SettingsRepository>.Instance));
+    private static ISettingsFactory CreateFactory(TestDatabase database) => database.Get<ISettingsFactory>();
 
     [Fact]
     public void Get_ReturnsSeededDefaults()
@@ -42,5 +39,18 @@ public class SettingsFactoryTests
         Assert.Equal("http://localhost:9999", settings.OllamaUrl);
         Assert.Equal("llama3.2", settings.OllamaModel);
         Assert.Equal(3, settings.LastProfileId);
+    }
+
+    [Theory]
+    [InlineData("not a url")]
+    [InlineData("ftp://localhost:11434")]
+    public async Task OllamaStatus_RejectsBadAddresses(string url)
+    {
+        using var database = new TestDatabase();
+
+        var status = await CreateFactory(database).GetOllamaStatusAsync(url, CancellationToken.None);
+
+        Assert.False(status.Reachable);
+        Assert.Contains("isn't a valid web address", status.Error);
     }
 }

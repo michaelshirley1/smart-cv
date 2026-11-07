@@ -61,6 +61,8 @@ public class LineResult
 public class TailorResult
 {
     public MatchingMode Mode { get; set; } = MatchingMode.Keyword;
+    public string? Model { get; set; }
+    public string? Notice { get; set; }
     public List<TagMatch> MatchedTags { get; set; } = [];
     public List<SectionResult> Sections { get; set; } = [];
     public List<LineResult> Lines { get; set; } = [];

@@ -1,22 +1,31 @@
 using SmartCv.Models;
+using SmartCv.Services;
 
 namespace SmartCv.Factories;
 
 public interface ITailoringFactory
 {
-    FactoryResult<TailorResult> Tailor(TailorRequest request);
+    Task<FactoryResult<TailorResult>> TailorAsync(TailorRequest request, CancellationToken cancellationToken);
 }
 
 public class TailoringFactory : ITailoringFactory
 {
-    private readonly IProfileFactory _profileFactory;
+    public const int RelevantScore = 5;
 
-    public TailoringFactory(IProfileFactory profileFactory)
+    private readonly IProfileFactory _profileFactory;
+    private readonly ISettingsFactory _settingsFactory;
+    private readonly IOllamaService _ollama;
+    private readonly IOllamaScoreCache _scoreCache;
+
+    public TailoringFactory(IProfileFactory profileFactory, ISettingsFactory settingsFactory, IOllamaService ollama, IOllamaScoreCache scoreCache)
     {
         _profileFactory = profileFactory;
+        _settingsFactory = settingsFactory;
+        _ollama = ollama;
+        _scoreCache = scoreCache;
     }
 
-    public FactoryResult<TailorResult> Tailor(TailorRequest request)
+    public async Task<FactoryResult<TailorResult>> TailorAsync(TailorRequest request, CancellationToken cancellationToken)
     {
         var profileResult = _profileFactory.GetById(request.ProfileId);
         if (profileResult.Value is null) return FactoryResult<TailorResult>.NotFound(profileResult.Error);
@@ -35,16 +44,17 @@ public class TailoringFactory : ITailoringFactory
         var tagScores = matches.ToDictionary(match => match.TagId, match => match.Score);
 
         var result = new TailorResult { Mode = MatchingMode.Keyword, MatchedTags = matches };
+        var modelScores = await ModelScoresAsync(profile, request.JobDescription, alwaysOnId, result, cancellationToken);
 
         foreach (var section in profile.Sections)
         {
-            var decision = DecideSection(section, alwaysOnId, tagScores);
+            var decision = DecideSection(section, alwaysOnId, tagScores, modelScores);
             var included = decision is SectionDecision.AlwaysOn or SectionDecision.Untagged or SectionDecision.Matched;
             result.Sections.Add(new SectionResult { SectionId = section.Id, Included = included, Decision = decision });
 
             foreach (var entry in section.Entries)
             {
-                result.Lines.AddRange(DecideLines(section, entry, included, decision == SectionDecision.AlwaysOn, alwaysOnId, tagScores));
+                result.Lines.AddRange(DecideLines(section, entry, included, decision == SectionDecision.AlwaysOn, alwaysOnId, tagScores, modelScores));
             }
         }
 
@@ -52,27 +62,97 @@ public class TailoringFactory : ITailoringFactory
         return FactoryResult<TailorResult>.Success(result);
     }
 
-    private static SectionDecision DecideSection(Section section, int? alwaysOnId, IReadOnlyDictionary<int, int> tagScores)
+    private async Task<Dictionary<int, int>?> ModelScoresAsync(ProfileDetail profile, string jobDescription, int? alwaysOnId, TailorResult result, CancellationToken cancellationToken)
+    {
+        var settings = _settingsFactory.Get();
+        if (settings.MatchingMode != MatchingMode.Ollama) return null;
+
+        if (string.IsNullOrWhiteSpace(settings.OllamaModel))
+        {
+            result.Notice = "No Ollama model is chosen in Settings, so keyword matching was used.";
+            return null;
+        }
+
+        var tagNames = profile.Tags.Where(tag => !tag.IsAlwaysOn).ToDictionary(tag => tag.Id, tag => tag.Name);
+        var lines = profile.Sections
+            .Where(section => !section.IsHidden && !(alwaysOnId is not null && section.TagIds.Contains(alwaysOnId.Value)))
+            .SelectMany(section => section.Entries.SelectMany(entry => entry.Lines
+                .Where(line => line.Override != LineOverride.Hidden && !(alwaysOnId is not null && line.TagIds.Contains(alwaysOnId.Value)))
+                .Select(line => new OllamaLine
+                {
+                    Id = line.Id,
+                    Context = string.Join(" · ", new[] { section.Title, entry.Heading }.Where(part => part.Length > 0)),
+                    Text = line.Text.Replace("**", string.Empty),
+                    Tags = line.TagIds.Where(tagNames.ContainsKey).Select(id => tagNames[id]).ToList(),
+                })))
+            .ToList();
+
+        var scope = _scoreCache.Scope(settings.OllamaModel, jobDescription);
+        var scores = new Dictionary<int, int>();
+        var missing = new List<OllamaLine>();
+        foreach (var line in lines)
+        {
+            if (_scoreCache.TryGet(scope, CacheKey(line), out var cached)) scores[line.Id] = cached;
+            else missing.Add(line);
+        }
+
+        try
+        {
+            var fresh = await _ollama.ScoreAsync(settings.OllamaUrl, settings.OllamaModel, jobDescription, missing, cancellationToken);
+            foreach (var line in missing)
+            {
+                var score = fresh.GetValueOrDefault(line.Id);
+                scores[line.Id] = score;
+                _scoreCache.Set(scope, CacheKey(line), score);
+            }
+        }
+        catch (OllamaException ex)
+        {
+            result.Notice = $"{ex.Message} Keyword matching was used instead.";
+            return null;
+        }
+
+        result.Mode = MatchingMode.Ollama;
+        result.Model = settings.OllamaModel;
+        return scores;
+    }
+
+    private static string CacheKey(OllamaLine line) => $"{line.Context}\n{line.Text}\n{string.Join(',', line.Tags)}";
+
+    private static SectionDecision DecideSection(Section section, int? alwaysOnId, IReadOnlyDictionary<int, int> tagScores, IReadOnlyDictionary<int, int>? modelScores)
     {
         if (section.IsHidden) return SectionDecision.Hidden;
         if (alwaysOnId is not null && section.TagIds.Contains(alwaysOnId.Value)) return SectionDecision.AlwaysOn;
 
         var tags = section.TagIds.Where(id => id != alwaysOnId).ToList();
         if (tags.Count == 0) return SectionDecision.Untagged;
-        return tags.Any(tagScores.ContainsKey) ? SectionDecision.Matched : SectionDecision.Unmatched;
+        if (tags.Any(tagScores.ContainsKey)) return SectionDecision.Matched;
+
+        var relevantLine = modelScores is not null && section.Entries
+            .SelectMany(entry => entry.Lines)
+            .Any(line => modelScores.GetValueOrDefault(line.Id) >= RelevantScore);
+        return relevantLine ? SectionDecision.Matched : SectionDecision.Unmatched;
     }
 
-    private static List<LineResult> DecideLines(Section section, Entry entry, bool sectionIncluded, bool sectionAlwaysOn, int? alwaysOnId, IReadOnlyDictionary<int, int> tagScores)
+    private static List<LineResult> DecideLines(
+        Section section,
+        Entry entry,
+        bool sectionIncluded,
+        bool sectionAlwaysOn,
+        int? alwaysOnId,
+        IReadOnlyDictionary<int, int> tagScores,
+        IReadOnlyDictionary<int, int>? modelScores)
     {
         var lines = entry.Lines.Select(line =>
         {
             var tags = line.TagIds.Where(id => id != alwaysOnId).ToList();
-            var score = tags.Sum(id => tagScores.GetValueOrDefault(id));
+            var score = modelScores is null ? tags.Sum(id => tagScores.GetValueOrDefault(id)) : modelScores.GetValueOrDefault(line.Id);
+            var relevant = modelScores is null ? score > 0 : score >= RelevantScore;
             var decision = line.Override == LineOverride.Hidden ? LineDecision.Hidden
                 : !sectionIncluded ? LineDecision.SectionExcluded
                 : sectionAlwaysOn || (alwaysOnId is not null && line.TagIds.Contains(alwaysOnId.Value)) ? LineDecision.AlwaysOn
-                : score > 0 ? LineDecision.Matched
-                : tags.Count == 0 ? LineDecision.Untagged
+                : relevant ? LineDecision.Matched
+                : modelScores is null && tags.Count == 0 ? LineDecision.Untagged
                 : LineDecision.Unmatched;
 
             return new LineResult

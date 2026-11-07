@@ -61,6 +61,7 @@ export interface Profile {
     phone: string;
     location: string;
     links: string[];
+    jobDescription: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -170,6 +171,8 @@ export interface LineResult {
 
 export interface TailorResult {
     mode: MatchingMode;
+    model: string | null;
+    notice: string | null;
     matchedTags: TagMatch[];
     sections: SectionResult[];
     lines: LineResult[];
@@ -177,6 +180,23 @@ export interface TailorResult {
 }
 
 export type CvView = 'all' | 'tailored';
+
+export interface OllamaStatus {
+    reachable: boolean;
+    models: string[];
+    error: string | null;
+}
+
+export interface ExportRequest {
+    profileId: number;
+    sectionIds: number[] | null;
+    lineIds: number[] | null;
+}
+
+export interface ExportResult {
+    saved: boolean;
+    path: string | null;
+}
 
 export interface AppSettings {
     matchingMode: MatchingMode;

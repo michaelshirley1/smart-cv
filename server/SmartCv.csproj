@@ -11,6 +11,7 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
     <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
+    <ApplicationIcon>Assets/app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
@@ -25,6 +26,7 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.14" />
     <PackageReference Include="Photino.NET" Version="4.0.16" />
+    <PackageReference Include="PuppeteerSharp" Version="25.15.0" />
     <PackageReference Include="SkiaSharp" Version="4.155.0" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.155.0" />
   </ItemGroup>
@@ -33,11 +35,18 @@
     <Content Remove="wwwroot\**" />
     <EmbeddedResource Include="wwwroot\**" />
     <EmbeddedResource Include="Templates\*.css" LogicalName="SmartCv.Templates.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Assets/app.ico;Assets/app.png" LogicalName="SmartCv.Assets.%(Filename)%(Extension)" />
     <Content Update="appsettings*.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="SmartCv.Tests" />
   </ItemGroup>
+
+  <Target Name="ExcludeSymbolFiles" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb'" />
+    </ItemGroup>
+  </Target>
 
 </Project>

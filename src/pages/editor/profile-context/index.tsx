@@ -5,6 +5,9 @@ import * as api from '../api';
 import { getErrorMessage } from '../../../api/errors';
 
 const defaultProfileName = 'My CV';
+const historyLimit = 50;
+
+type HistoryStack = 'undo' | 'redo';
 
 const ProfileContext = createContext<ProfileContextValue | null>(null);
 
@@ -22,6 +25,22 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     const [error, setError] = useState<string | null>(null);
     const [templateRevision, setTemplateRevision] = useState(0);
     const started = useRef(false);
+    const history = useRef<Record<HistoryStack, ProfileDetail[]>>({ undo: [], redo: [] });
+    const stepping = useRef(false);
+    const [historySize, setHistorySize] = useState({ undo: 0, redo: 0 });
+
+    const syncHistory = () => setHistorySize({ undo: history.current.undo.length, redo: history.current.redo.length });
+
+    const resetHistory = () => {
+        history.current = { undo: [], redo: [] };
+        syncHistory();
+    };
+
+    const record = (before: ProfileDetail) => {
+        history.current.undo = [...history.current.undo, before].slice(-historyLimit);
+        history.current.redo = [];
+        syncHistory();
+    };
 
     const run = async (action: () => Promise<void>, fallback: string) => {
         setError(null);
@@ -38,6 +57,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     };
 
     const open = async (detail: ProfileDetail, current: AppSettings | null = settings) => {
+        if (detail.id !== profile?.id) resetHistory();
         setProfile(detail);
         setProfiles(await api.getProfiles());
         await remember(detail.id, current);
@@ -89,6 +109,22 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
             await open(remaining.length > 0 ? await api.getProfile(remaining[0].id) : await createDefault());
         }, 'Could not delete the profile.');
 
+    const step = async (from: HistoryStack) => {
+        const snapshot = history.current[from].at(-1);
+        if (!profile || !snapshot || stepping.current) return;
+
+        stepping.current = true;
+        const to: HistoryStack = from === 'undo' ? 'redo' : 'undo';
+        await run(async () => {
+            const restored = await api.restoreProfile(profile.id, snapshot);
+            history.current[from] = history.current[from].slice(0, -1);
+            history.current[to] = [...history.current[to], profile].slice(-historyLimit);
+            setProfile(restored);
+        }, from === 'undo' ? 'Could not undo.' : 'Could not redo.');
+        stepping.current = false;
+        syncHistory();
+    };
+
     const value: ProfileContextValue = {
         profiles,
         profile,
@@ -101,10 +137,12 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
         duplicateProfile,
         deleteProfile,
         mutate: async (action, fallback) => {
+            const before = profile;
             let updated: ProfileDetail | null = null;
             await run(async () => {
                 updated = await action();
                 setProfile(updated);
+                if (before) record(before);
             }, fallback);
             return updated;
         },
@@ -112,6 +150,12 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
         reloadProfile: async () => {
             if (profile) await selectProfile(profile.id);
         },
+        canUndo: historySize.undo > 0,
+        canRedo: historySize.redo > 0,
+        undo: () => step('undo'),
+        redo: () => step('redo'),
+        settings,
+        saveSettings: next => run(async () => setSettings(await api.updateSettings(next)), 'Could not save the settings.'),
         templateRevision,
         refreshTemplate: () => setTemplateRevision(current => current + 1),
     };

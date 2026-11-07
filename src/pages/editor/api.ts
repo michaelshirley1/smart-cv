@@ -7,8 +7,11 @@ import {
     CreateTagRequest,
     Entry,
     EntryRequest,
+    ExportRequest,
+    ExportResult,
     Line,
     LineRequest,
+    OllamaStatus,
     Profile,
     ProfileDetail,
     ProfileRequest,
@@ -36,6 +39,12 @@ export const updateProfile = (id: number, request: ProfileRequest) =>
 
 export const duplicateProfile = (id: number) =>
     client.post<ProfileDetail>(`/profile/${id}/duplicate`).then(r => r.data);
+
+export const restoreProfile = (id: number, snapshot: ProfileDetail) =>
+    client.post<ProfileDetail>(`/profile/${id}/restore`, snapshot).then(r => r.data);
+
+export const saveJobDescription = (id: number, jobDescription: string) =>
+    client.put(`/profile/${id}/job-description`, { jobDescription });
 
 export const deleteProfile = (id: number) =>
     client.delete(`/profile/${id}`);
@@ -112,11 +121,17 @@ export const getFonts = () =>
 export const tailor = (profileId: number, jobDescription: string) =>
     client.post<TailorResult>('/tailor', { profileId, jobDescription }).then(r => r.data);
 
+export const exportPdf = (request: ExportRequest) =>
+    client.post<ExportResult>('/export/pdf', request).then(r => r.data);
+
 export const getSettings = () =>
     client.get<AppSettings>('/settings').then(r => r.data);
 
 export const updateSettings = (settings: AppSettings) =>
     client.put<AppSettings>('/settings', settings).then(r => r.data);
+
+export const getOllamaStatus = (url?: string) =>
+    client.get<OllamaStatus>('/settings/ollama', { params: url ? { url } : undefined }).then(r => r.data);
 
 export const toProfileRequest = (profile: Profile): ProfileRequest => ({
     name: profile.name,

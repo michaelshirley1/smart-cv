@@ -12,13 +12,21 @@ const lineLabels: Record<LineDecision, string | null> = {
     sectionExcluded: 'Section left out',
 };
 
-export const lineStatusFor = (result: TailorResult, trimmedIds: number[], line: Line): LineStatus | null => {
+const scoredByModel: LineDecision[] = ['matched', 'unmatched', 'overLimit', 'fallback'];
+
+export const lineStatusFor =(result: TailorResult, trimmedIds: number[], line: Line): LineStatus | null => {
     const decision = result.lines.find(candidate => candidate.lineId === line.id);
     if (!decision) return null;
     if (trimmedIds.includes(line.id)) return { label: 'Trimmed to fit the page', included: false };
 
     const label = lineLabels[decision.decision];
     if (label === null) return null;
+
+    if (result.mode === 'ollama' && scoredByModel.includes(decision.decision)) {
+        const text = decision.decision === 'matched' ? 'Relevant' : label;
+        return { label: `${text} (${decision.score}/10)`, included: decision.included };
+    }
+
     if (decision.decision !== 'matched') return { label, included: decision.included };
 
     const tags = result.matchedTags.filter(tag => line.tagIds.includes(tag.tagId)).map(tag => tag.name);

@@ -1,0 +1,10 @@
+@use '../../styles/tokens' as *;
+
+.print-page {
+    background: $colour-page;
+
+    &-error {
+        padding: $space-5;
+        color: $colour-text-muted;
+    }
+}

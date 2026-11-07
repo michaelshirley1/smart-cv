@@ -55,6 +55,24 @@ public class ProfileController : ControllerBase
         return _profileFactory.Duplicate(id).ToActionResult(StatusCodes.Status201Created);
     }
 
+    [HttpPost("{id:int}/restore")]
+    [ProducesResponseType(typeof(ProfileDetail), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public IActionResult Restore(int id, [FromBody] ProfileDetail snapshot)
+    {
+        return _profileFactory.Restore(id, snapshot).ToActionResult();
+    }
+
+    [HttpPut("{id:int}/job-description")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    public IActionResult SaveJobDescription(int id, [FromBody] JobDescriptionRequest request)
+    {
+        return _profileFactory.SaveJobDescription(id, request).ToActionResult();
+    }
+
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

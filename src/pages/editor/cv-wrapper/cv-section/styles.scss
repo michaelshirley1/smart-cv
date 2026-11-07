@@ -13,6 +13,7 @@
         font-weight: var(--cv-heading-weight);
         line-height: inherit;
         text-transform: var(--cv-heading-case);
+        break-after: avoid;
     }
 
     &--summary &-title {

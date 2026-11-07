@@ -13,7 +13,10 @@ export type IconName =
     | 'eye-off'
     | 'pin'
     | 'chevron-right'
-    | 'tag';
+    | 'tag'
+    | 'settings'
+    | 'undo'
+    | 'redo';
 
 export interface IconProps {
     name: IconName;

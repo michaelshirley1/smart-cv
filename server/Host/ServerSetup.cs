@@ -16,6 +16,7 @@ public static class ServerSetup
         });
 
         builder.WebHost.UseUrls(options.ServerUrl);
+        builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
 
         builder.Services.AddControllers()
             .AddJsonOptions(json => json.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase)));

@@ -1,0 +1,60 @@
+@use '../../../../styles/tokens' as *;
+
+.settings-dialog {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+
+    &-group {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: $space-2;
+    }
+
+    &-label {
+        color: $colour-text-muted;
+        font-size: $font-size-small;
+    }
+
+    &-hint,
+    &-status {
+        font-size: $font-size-small;
+        line-height: 1.45;
+    }
+
+    &-hint {
+        color: $colour-text-muted;
+    }
+
+    &-status {
+        min-height: 1.45em;
+        color: $colour-danger;
+
+        &--ok {
+            color: $colour-success;
+        }
+    }
+
+    &-address {
+        display: flex;
+        align-items: flex-end;
+        gap: $space-2;
+    }
+
+    &-url {
+        flex: 1;
+    }
+
+    &-code {
+        padding: 1px $space-1;
+        border-radius: $radius;
+        background: $colour-hover;
+        font-family: ui-monospace, Consolas, monospace;
+        font-size: 0.75rem;
+    }
+
+    .segmented-control {
+        align-self: flex-start;
+    }
+}

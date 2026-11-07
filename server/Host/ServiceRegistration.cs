@@ -12,6 +12,12 @@ public static class ServiceRegistration
         services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
         services.AddSingleton<ITemplateFileService, TemplateFileService>();
         services.AddSingleton<IFontService, FontService>();
+        services.AddSingleton<IOllamaScoreCache, OllamaScoreCache>();
+        services.AddHttpClient<IOllamaService, OllamaService>();
+        services.AddSingleton<IPrintJobStore, PrintJobStore>();
+        services.AddSingleton<IPdfService, PdfService>();
+        services.AddSingleton<IFileDialogService, FileDialogService>();
+        services.AddSingleton<IClientAddress, ClientAddress>();
 
         services.AddScoped<ISchemaRepository, SchemaRepository>();
         services.AddScoped<ISettingsRepository, SettingsRepository>();
@@ -30,6 +36,7 @@ public static class ServiceRegistration
         services.AddScoped<ITemplateFactory, TemplateFactory>();
         services.AddScoped<IFontFactory, FontFactory>();
         services.AddScoped<ITailoringFactory, TailoringFactory>();
+        services.AddScoped<IExportFactory, ExportFactory>();
 
         return services;
     }

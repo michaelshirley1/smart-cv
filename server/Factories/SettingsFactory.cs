@@ -1,5 +1,6 @@
 using SmartCv.Models;
 using SmartCv.Repositories;
+using SmartCv.Services;
 
 namespace SmartCv.Factories;
 
@@ -7,15 +8,18 @@ public interface ISettingsFactory
 {
     AppSettings Get();
     AppSettings Update(AppSettings settings);
+    Task<OllamaStatus> GetOllamaStatusAsync(string? url, CancellationToken cancellationToken);
 }
 
 public class SettingsFactory : ISettingsFactory
 {
     private readonly ISettingsRepository _settingsRepository;
+    private readonly IOllamaService _ollama;
 
-    public SettingsFactory(ISettingsRepository settingsRepository)
+    public SettingsFactory(ISettingsRepository settingsRepository, IOllamaService ollama)
     {
         _settingsRepository = settingsRepository;
+        _ollama = ollama;
     }
 
     public AppSettings Get()
@@ -48,5 +52,13 @@ public class SettingsFactory : ISettingsFactory
         ]);
 
         return Get();
+    }
+
+    public Task<OllamaStatus> GetOllamaStatusAsync(string? url, CancellationToken cancellationToken)
+    {
+        var target = string.IsNullOrWhiteSpace(url) ? Get().OllamaUrl : url.Trim();
+        return Uri.TryCreate(target, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
+            ? _ollama.GetStatusAsync(target, cancellationToken)
+            : Task.FromResult(new OllamaStatus { Reachable = false, Error = $"{target} isn't a valid web address." });
     }
 }

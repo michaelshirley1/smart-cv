@@ -13,6 +13,24 @@
         font-size: $font-size-small;
     }
 
+    &-hint,
+    &-notice {
+        font-size: $font-size-small;
+        line-height: 1.45;
+    }
+
+    &-hint {
+        color: $colour-text-muted;
+    }
+
+    &-notice {
+        padding: $space-2;
+        border: 1px solid $colour-danger;
+        border-radius: $radius;
+        background: $colour-danger-surface;
+        color: $colour-danger;
+    }
+
     &-result {
         display: flex;
         flex-direction: column;

@@ -5,7 +5,7 @@ namespace SmartCv.Tests;
 
 public class TailoringFactoryTests
 {
-    private sealed class Cv
+    internal sealed class Cv
     {
         public required TestDatabase Database { get; init; }
         public required int ProfileId { get; init; }
@@ -28,10 +28,10 @@ public class TailoringFactoryTests
         public int TagId(string name) => name == Tag.AlwaysOnName ? AlwaysOn : Tags[name];
 
         public TailorResult Tailor(string jobDescription) =>
-            Database.Get<ITailoringFactory>().Tailor(new TailorRequest { ProfileId = ProfileId, JobDescription = jobDescription }).Value!;
+            Database.Get<ITailoringFactory>().TailorAsync(new TailorRequest { ProfileId = ProfileId, JobDescription = jobDescription }, CancellationToken.None).Result.Value!;
     }
 
-    private static Cv CreateCv(TestDatabase database)
+    internal static Cv CreateCv(TestDatabase database)
     {
         var profile = database.CreateProfile();
         database.AddTag(profile.Id, "Frontend", "react", "typescript");
@@ -46,7 +46,7 @@ public class TailoringFactoryTests
         };
     }
 
-    private static LineResult Line(TailorResult result, int lineId) => result.Lines.Single(line => line.LineId == lineId);
+    internal static LineResult Line(TailorResult result, int lineId) => result.Lines.Single(line => line.LineId == lineId);
 
     [Fact]
     public void MatchedTags_AreScoredAndSorted()
@@ -180,11 +180,11 @@ public class TailoringFactoryTests
     }
 
     [Fact]
-    public void MissingProfile_IsNotFound()
+    public async Task MissingProfile_IsNotFound()
     {
         using var database = new TestDatabase();
 
-        var result = database.Get<ITailoringFactory>().Tailor(new TailorRequest { ProfileId = 99, JobDescription = "x" });
+        var result = await database.Get<ITailoringFactory>().TailorAsync(new TailorRequest { ProfileId = 99, JobDescription = "x" }, CancellationToken.None);
 
         Assert.Equal(FactoryStatus.NotFound, result.Status);
     }

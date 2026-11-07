@@ -11,6 +11,8 @@ public interface IProfileFactory
     FactoryResult<ProfileDetail> Create(ProfileRequest request);
     FactoryResult<ProfileDetail> Update(int id, ProfileRequest request);
     FactoryResult<ProfileDetail> Duplicate(int id);
+    FactoryResult<ProfileDetail> Restore(int id, ProfileDetail snapshot);
+    FactoryResult SaveJobDescription(int id, JobDescriptionRequest request);
     FactoryResult Delete(int id);
 }
 
@@ -76,6 +78,7 @@ public class ProfileFactory : IProfileFactory
             Phone = profile.Phone,
             Location = profile.Location,
             Links = profile.Links,
+            JobDescription = profile.JobDescription,
             CreatedAt = profile.CreatedAt,
             UpdatedAt = profile.UpdatedAt,
             Tags = _tagRepository.GetByProfileId(id).ToList(),
@@ -127,29 +130,76 @@ public class ProfileFactory : IProfileFactory
             Location = original.Location,
             Links = original.Links,
         });
+        _profileRepository.SaveJobDescription(copyId, original.JobDescription);
 
-        var tagIds = original.Tags.ToDictionary(
+        var tagIds = original.Tags.ToDictionary(tag => tag.Id, tag => _tagRepository.Create(CopyOf(tag, copyId)));
+        CopySections(original.Sections, copyId, tagIds);
+
+        return GetById(copyId);
+    }
+
+    public FactoryResult<ProfileDetail> Restore(int id, ProfileDetail snapshot)
+    {
+        var existing = GetById(id);
+        if (existing.Value is null) return existing;
+
+        var templateName = _templateFiles.Exists(snapshot.TemplateName) ? snapshot.TemplateName : existing.Value.TemplateName;
+        _profileRepository.Update(new Profile
+        {
+            Id = id,
+            Name = snapshot.Name,
+            TemplateName = templateName,
+            TargetPages = snapshot.TargetPages,
+            FullName = snapshot.FullName,
+            Headline = snapshot.Headline,
+            Email = snapshot.Email,
+            Phone = snapshot.Phone,
+            Location = snapshot.Location,
+            Links = snapshot.Links,
+        });
+        _profileRepository.SaveJobDescription(id, snapshot.JobDescription);
+
+        foreach (var section in existing.Value.Sections) _sectionRepository.Delete(section.Id);
+        foreach (var tag in existing.Value.Tags.Where(tag => !tag.IsAlwaysOn)) _tagRepository.Delete(tag.Id);
+
+        var alwaysOn = existing.Value.Tags.First(tag => tag.IsAlwaysOn);
+        var tagIds = snapshot.Tags.ToDictionary(
             tag => tag.Id,
-            tag => _tagRepository.Create(new Tag
-            {
-                ProfileId = copyId,
-                Name = tag.Name,
-                Keywords = tag.Keywords,
-                Colour = tag.Colour,
-                IsAlwaysOn = tag.IsAlwaysOn,
-            }));
+            tag => tag.IsAlwaysOn ? alwaysOn.Id : _tagRepository.Create(CopyOf(tag, id)));
+        CopySections(snapshot.Sections, id, tagIds);
 
-        foreach (var section in original.Sections)
+        return GetById(id);
+    }
+
+    public FactoryResult SaveJobDescription(int id, JobDescriptionRequest request)
+    {
+        return _profileRepository.SaveJobDescription(id, request.JobDescription.Trim()) > 0
+            ? FactoryResult.Success()
+            : FactoryResult.NotFound($"Profile {id} not found.");
+    }
+
+    public FactoryResult Delete(int id)
+    {
+        return _profileRepository.Delete(id) > 0
+            ? FactoryResult.Success()
+            : FactoryResult.NotFound($"Profile {id} not found.");
+    }
+
+    private void CopySections(IEnumerable<Section> sections, int profileId, IReadOnlyDictionary<int, int> tagIds)
+    {
+        IEnumerable<int> Mapped(IEnumerable<int> ids) => ids.Where(tagIds.ContainsKey).Select(tagId => tagIds[tagId]);
+
+        foreach (var section in sections)
         {
             var sectionId = _sectionRepository.Create(new Section
             {
-                ProfileId = copyId,
+                ProfileId = profileId,
                 Title = section.Title,
                 Kind = section.Kind,
                 MaxLines = section.MaxLines,
                 IsHidden = section.IsHidden,
             });
-            _sectionRepository.SetTags(sectionId, section.TagIds.Select(tagId => tagIds[tagId]));
+            _sectionRepository.SetTags(sectionId, Mapped(section.TagIds));
 
             foreach (var entry in section.Entries)
             {
@@ -170,20 +220,20 @@ public class ProfileFactory : IProfileFactory
                         Text = line.Text,
                         Override = line.Override,
                     });
-                    _lineRepository.SetTags(lineId, line.TagIds.Select(tagId => tagIds[tagId]));
+                    _lineRepository.SetTags(lineId, Mapped(line.TagIds));
                 }
             }
         }
-
-        return GetById(copyId);
     }
 
-    public FactoryResult Delete(int id)
+    private static Tag CopyOf(Tag tag, int profileId) => new()
     {
-        return _profileRepository.Delete(id) > 0
-            ? FactoryResult.Success()
-            : FactoryResult.NotFound($"Profile {id} not found.");
-    }
+        ProfileId = profileId,
+        Name = tag.Name,
+        Keywords = tag.Keywords,
+        Colour = tag.Colour,
+        IsAlwaysOn = tag.IsAlwaysOn,
+    };
 
     private static Profile ToProfile(ProfileRequest request, string templateName) => new()
     {

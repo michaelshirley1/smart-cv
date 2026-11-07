@@ -1,4 +1,5 @@
 using SmartCv.Host;
+using SmartCv.Services;
 
 namespace SmartCv;
 
@@ -23,7 +24,9 @@ public static class Program
         app.StartAsync().GetAwaiter().GetResult();
 
         var url = options.Mode == AppMode.Dev ? AppOptions.DevClientUrl : app.Urls.First();
-        AppWindow.Show(url);
+        var window = AppWindow.Create(url, paths);
+        app.Services.GetRequiredService<IFileDialogService>().Attach(window);
+        window.WaitForClose();
 
         app.StopAsync().GetAwaiter().GetResult();
     }

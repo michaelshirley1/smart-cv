@@ -29,4 +29,11 @@ public class SettingsController : ControllerBase
     {
         return Ok(_settingsFactory.Update(settings));
     }
+
+    [HttpGet("ollama")]
+    [ProducesResponseType(typeof(OllamaStatus), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetOllamaStatus([FromQuery] string? url, CancellationToken cancellationToken)
+    {
+        return Ok(await _settingsFactory.GetOllamaStatusAsync(url, cancellationToken));
+    }
 }

@@ -33,6 +33,12 @@ public class ProfileRequest
     public List<string> Links { get; set; } = [];
 }
 
+public class JobDescriptionRequest
+{
+    [StringLength(50000)]
+    public string JobDescription { get; set; } = string.Empty;
+}
+
 public class SectionRequest
 {
     [Required]

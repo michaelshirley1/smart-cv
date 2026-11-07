@@ -11,15 +11,14 @@ public sealed class TestDatabase : IDisposable
     private readonly ServiceProvider _provider;
     private readonly IServiceScope _scope;
 
-    public TestDatabase()
+    public TestDatabase(Action<IServiceCollection>? configure = null)
     {
         Paths = new AppPaths(Path.Combine(Path.GetTempPath(), "smartcv-tests", Guid.NewGuid().ToString("N")));
         Paths.EnsureCreated();
 
-        _provider = new ServiceCollection()
-            .AddLogging()
-            .AddSmartCv(Paths)
-            .BuildServiceProvider();
+        var services = new ServiceCollection().AddLogging().AddSmartCv(Paths);
+        configure?.Invoke(services);
+        _provider = services.BuildServiceProvider();
         _scope = _provider.CreateScope();
 
         Get<ISchemaRepository>().EnsureCreated();

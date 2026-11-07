@@ -35,6 +35,7 @@ public class SchemaRepository : ISchemaRepository
                     Phone TEXT NOT NULL DEFAULT '',
                     Location TEXT NOT NULL DEFAULT '',
                     Links TEXT NOT NULL DEFAULT '[]',
+                    JobDescription TEXT NOT NULL DEFAULT '',
                     CreatedAt TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
                     UpdatedAt TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
                 );
@@ -103,12 +104,26 @@ public class SchemaRepository : ISchemaRepository
 
                 INSERT OR IGNORE INTO Settings (Key, Value) VALUES
                     ('MatchingMode', 'keyword'),
-                    ('OllamaUrl', 'http://localhost:11434'),
+                    ('OllamaUrl', 'http://127.0.0.1:11434'),
                     ('OllamaModel', ''),
                     ('LastProfileId', '');
+
+                UPDATE Settings
+                SET Value = 'http://127.0.0.1:11434'
+                WHERE Key = 'OllamaUrl' AND Value = 'http://localhost:11434';
+                """;
+            const string columnSql = """
+                SELECT COUNT(*)
+                FROM pragma_table_info('Profiles')
+                WHERE name = 'JobDescription'
+                """;
+            const string addColumnSql = """
+                ALTER TABLE Profiles
+                ADD COLUMN JobDescription TEXT NOT NULL DEFAULT ''
                 """;
             using var connection = _connectionFactory.Create();
             var affected = connection.Execute(sql);
+            if (connection.ExecuteScalar<int>(columnSql) == 0) affected += connection.Execute(addColumnSql);
             return affected;
         }
         catch (SqliteException ex)

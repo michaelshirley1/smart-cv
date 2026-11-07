@@ -1,5 +1,5 @@
 import React from 'react';
-import { Profile, ProfileDetail } from '../model';
+import { AppSettings, Profile, ProfileDetail } from '../model';
 
 export interface ProfileProviderProps {
     children: React.ReactNode;
@@ -19,6 +19,12 @@ export interface ProfileContextValue {
     mutate: (action: () => Promise<ProfileDetail>, fallback: string) => Promise<ProfileDetail | null>;
     attempt: (action: () => Promise<void>, fallback: string) => Promise<void>;
     reloadProfile: () => Promise<void>;
+    settings: AppSettings | null;
+    saveSettings: (settings: AppSettings) => Promise<void>;
+    canUndo: boolean;
+    canRedo: boolean;
+    undo: () => Promise<void>;
+    redo: () => Promise<void>;
     templateRevision: number;
     refreshTemplate: () => void;
 }

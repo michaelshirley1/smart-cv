@@ -12,11 +12,12 @@ public interface IProfileRepository
     int Update(Profile profile);
     int Delete(int id);
     int ReplaceTemplate(string currentName, string newName);
+    int SaveJobDescription(int id, string jobDescription);
 }
 
 public class ProfileRepository : IProfileRepository
 {
-    private const string Columns = "Id, Name, TemplateName, TargetPages, FullName, Headline, Email, Phone, Location, Links, CreatedAt, UpdatedAt";
+    private const string Columns = "Id, Name, TemplateName, TargetPages, FullName, Headline, Email, Phone, Location, Links, JobDescription, CreatedAt, UpdatedAt";
 
     private readonly IDbConnectionFactory _connectionFactory;
     private readonly ILogger<ProfileRepository> _logger;
@@ -152,6 +153,26 @@ public class ProfileRepository : IProfileRepository
         {
             _logger.LogError(ex, "Failed to move profiles from template {TemplateName}", currentName);
             throw new RepositoryException("Failed to update profile templates.", ex);
+        }
+    }
+
+    public int SaveJobDescription(int id, string jobDescription)
+    {
+        try
+        {
+            const string sql = """
+                UPDATE Profiles
+                SET JobDescription = @JobDescription
+                WHERE Id = @Id
+                """;
+            using var connection = _connectionFactory.Create();
+            var affected = connection.Execute(sql, new { Id = id, JobDescription = jobDescription });
+            return affected;
+        }
+        catch (SqliteException ex)
+        {
+            _logger.LogError(ex, "Failed to save the job description for profile {ProfileId}", id);
+            throw new RepositoryException("Failed to save the job description.", ex);
         }
     }
 }

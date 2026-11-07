@@ -19,7 +19,7 @@ const sameFit = (a: FitState, b: FitState) =>
     a.key === b.key && a.fits === b.fits && a.trimmedIds.join(',') === b.trimmedIds.join(',');
 
 export const TailoringProvider: React.FC<TailoringProviderProps> = ({ children }) => {
-    const { profile, attempt } = useProfileContext();
+    const { profile, settings, attempt } = useProfileContext();
     const [draft, setDraft] = useState('');
     const [applied, setApplied] = useState<string | null>(null);
     const [result, setResult] = useState<TailorResult | null>(null);
@@ -28,8 +28,10 @@ export const TailoringProvider: React.FC<TailoringProviderProps> = ({ children }
     const [fit, setFitState] = useState<FitState>(emptyFit);
     const [pages, setPagesState] = useState(1);
     const request = useRef(0);
+    const loadedProfileId = useRef<number | null>(null);
 
     const contentKey = profile ? JSON.stringify([profile.id, profile.sections, profile.tags]) : '';
+    const matchingKey = settings ? JSON.stringify([settings.matchingMode, settings.ollamaUrl, settings.ollamaModel]) : '';
 
     const run = async (description: string) => {
         if (!profile) return;
@@ -42,27 +44,52 @@ export const TailoringProvider: React.FC<TailoringProviderProps> = ({ children }
         if (id === request.current) setLoading(false);
     };
 
-    useEffect(() => {
-        if (applied === null) return;
-        const timer = window.setTimeout(() => run(applied), retailorDelay);
-        return () => window.clearTimeout(timer);
-    }, [contentKey]);
-
-    const tailor = async () => {
-        const description = draft.trim();
-        if (!description) return;
-        setApplied(description);
-        await run(description);
-        setView('tailored');
-    };
-
-    const clear = () => {
+    const reset = () => {
         request.current++;
         setApplied(null);
         setResult(null);
         setLoading(false);
         setView('all');
         setFitState(emptyFit);
+    };
+
+    useEffect(() => {
+        if (!profile) return;
+
+        if (loadedProfileId.current !== profile.id) {
+            loadedProfileId.current = profile.id;
+            const saved = profile.jobDescription.trim();
+            reset();
+            setDraft(saved);
+            if (saved) {
+                setApplied(saved);
+                setView('tailored');
+                run(saved);
+            }
+            return;
+        }
+
+        if (applied === null) return;
+        const timer = window.setTimeout(() => run(applied), retailorDelay);
+        return () => window.clearTimeout(timer);
+    }, [contentKey, matchingKey]);
+
+    const persist = (description: string) => {
+        if (profile) attempt(() => api.saveJobDescription(profile.id, description).then(() => undefined), 'Could not save the job description.');
+    };
+
+    const tailor = async () => {
+        const description = draft.trim();
+        if (!description) return;
+        setApplied(description);
+        persist(description);
+        await run(description);
+        setView('tailored');
+    };
+
+    const clear = () => {
+        reset();
+        persist('');
     };
 
     const isTailored = view === 'tailored' && result !== null;

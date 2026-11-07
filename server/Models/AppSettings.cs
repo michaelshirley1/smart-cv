@@ -14,6 +14,7 @@ public static class SettingKeys
     public const string OllamaUrl = "OllamaUrl";
     public const string OllamaModel = "OllamaModel";
     public const string LastProfileId = "LastProfileId";
+    public const string ExportFolder = "ExportFolder";
 }
 
 public class AppSettings
@@ -32,4 +33,10 @@ public class AppSettings
 
     [Range(1, int.MaxValue)]
     public int? LastProfileId { get; set; }
+}
+
+public class AppInfo
+{
+    public string Version { get; set; } = string.Empty;
+    public string DataFolder { get; set; } = string.Empty;
 }

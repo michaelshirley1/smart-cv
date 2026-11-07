@@ -209,11 +209,21 @@ export interface ExportRequest {
     profileId: number;
     sectionIds: number[] | null;
     lineIds: number[] | null;
+    folder?: string;
+    fileName?: string;
+    overwrite?: boolean;
 }
 
 export interface ExportResult {
     saved: boolean;
     path: string | null;
+    exists: boolean;
+}
+
+export interface ExportLocation {
+    folder: string;
+    fileName: string;
+    canBrowse: boolean;
 }
 
 export interface AppSettings {
@@ -221,4 +231,9 @@ export interface AppSettings {
     ollamaUrl: string;
     ollamaModel: string;
     lastProfileId: number | null;
+}
+
+export interface AppInfo {
+    version: string;
+    dataFolder: string;
 }

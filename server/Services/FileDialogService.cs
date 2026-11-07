@@ -1,49 +1,29 @@
 using Photino.NET;
-using SmartCv.Host;
 
 namespace SmartCv.Services;
 
 public interface IFileDialogService
 {
+    bool CanBrowse { get; }
     void Attach(PhotinoWindow window);
-    Task<string?> AskSavePathAsync(string suggestedName);
+    Task<string?> AskFolderAsync(string? initialFolder);
 }
 
 public class FileDialogService : IFileDialogService
 {
-    private static readonly (string Name, string[] Extensions)[] PdfFilter = [("PDF document", ["pdf"])];
-
-    private readonly IAppPaths _paths;
     private PhotinoWindow? _window;
 
-    public FileDialogService(IAppPaths paths)
-    {
-        _paths = paths;
-    }
+    public bool CanBrowse => _window is not null;
 
     public void Attach(PhotinoWindow window) => _window = window;
 
-    public async Task<string?> AskSavePathAsync(string suggestedName)
+    public async Task<string?> AskFolderAsync(string? initialFolder)
     {
-        if (_window is null)
-        {
-            Directory.CreateDirectory(_paths.Exports);
-            return UniquePath(Path.Combine(_paths.Exports, suggestedName));
-        }
+        if (_window is null) return null;
 
-        var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        var chosen = await _window.ShowSaveFileAsync("Export PDF", Path.Combine(documents, suggestedName), PdfFilter);
-        if (string.IsNullOrWhiteSpace(chosen)) return null;
-        return chosen.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) ? chosen : chosen + ".pdf";
-    }
-
-    private static string UniquePath(string path)
-    {
-        var folder = Path.GetDirectoryName(path)!;
-        var name = Path.GetFileNameWithoutExtension(path);
-        var extension = Path.GetExtension(path);
-        var candidate = path;
-        for (var suffix = 2; File.Exists(candidate); suffix++) candidate = Path.Combine(folder, $"{name} ({suffix}){extension}");
-        return candidate;
+        var start = !string.IsNullOrWhiteSpace(initialFolder) && Directory.Exists(initialFolder) ? initialFolder : null;
+        var chosen = await _window.ShowOpenFolderAsync("Choose where to save the PDF", start, false);
+        var folder = chosen?.FirstOrDefault();
+        return string.IsNullOrWhiteSpace(folder) ? null : folder;
     }
 }

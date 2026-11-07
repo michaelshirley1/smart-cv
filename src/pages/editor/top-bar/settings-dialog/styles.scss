@@ -54,6 +54,20 @@
         font-size: 0.75rem;
     }
 
+    &-about {
+        padding-top: $space-4;
+        border-top: $border;
+    }
+
+    &-version {
+        font-size: $font-size-base;
+    }
+
+    &-folder {
+        overflow-wrap: anywhere;
+        user-select: all;
+    }
+
     .segmented-control {
         align-self: flex-start;
     }

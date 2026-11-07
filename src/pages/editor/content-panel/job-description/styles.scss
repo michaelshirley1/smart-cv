@@ -3,12 +3,14 @@
 .job-description {
     &-actions {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         gap: $space-2;
     }
 
     &-mode {
         margin-left: auto;
+        white-space: nowrap;
         color: $colour-text-muted;
         font-size: $font-size-small;
     }

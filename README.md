@@ -5,7 +5,7 @@
        <img src="public/favicon.svg" alt="Smart CV" width="72" />
       </picture>
     </td>
-    <td valign="middle" style="padding-left: 12px;">
+    <td valign="middle">
       <h1>Smart CV</h1>
     </td>
   </tr>
@@ -14,10 +14,10 @@
 <p align="center">Dynamic Resume Creator</p>
 
 <p align="center">
-  <img alt="CI" src="https://github.com/michaelshirley1/door-manager-prod/actions/workflows/ci.yml/badge.svg">
-  <img alt=".NET 8" src="https://img.shields.io/badge/.NET-8-512BD4">
+  <a href="https://github.com/michaelshirley1/smart-cv/actions/workflows/release.yml"><img alt="Release" src="https://github.com/michaelshirley1/smart-cv/actions/workflows/release.yml/badge.svg"></a>
+  <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-61DAFB">
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-4.9-3178C6">
+  <img alt="TypeScript 5.9" src="https://img.shields.io/badge/TypeScript-5.9-3178C6">
 </p>
 
 
@@ -81,7 +81,8 @@ data folder on the first export.
 4. Switch between **All lines** and **Tailored** in the top bar. Each line in the content panel says why it was
    kept or left out; pin a line to force it in.
 5. Style the CV from the left panel. Changing a built-in template saves your own copy automatically.
-6. **Export PDF** (Ctrl+P).
+6. **Export PDF** (Ctrl+P): choose the file name and folder (type it or press **Browse…**). The folder is
+   remembered, and you're asked before an existing file is replaced.
 
 Hover a side panel to widen it to half the window; use its expand button to fill the window, `Esc` to go back.
 

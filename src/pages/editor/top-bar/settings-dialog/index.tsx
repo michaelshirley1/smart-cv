@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { matchingHints, matchingOptions, SettingsDialogProps, suggestedModel } from './model';
-import { MatchingMode, OllamaStatus } from '../../model';
+import { AppInfo, MatchingMode, OllamaStatus } from '../../model';
 import { useProfileContext } from '../../profile-context';
 import * as api from '../../api';
 import Modal from '../../../../components/modal';
@@ -18,6 +18,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
     const [model, setModel] = useState(settings?.ollamaModel ?? '');
     const [status, setStatus] = useState<OllamaStatus | null>(null);
     const [checking, setChecking] = useState(false);
+    const [about, setAbout] = useState<AppInfo | null>(null);
 
     const check = async () => {
         setChecking(true);
@@ -34,6 +35,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
 
     useEffect(() => {
         check();
+        api.getAbout().then(setAbout).catch(() => setAbout(null));
     }, []);
 
     const save = async () => {
@@ -97,6 +99,18 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                                 {' '}<code className="settings-dialog-code">ollama pull {suggestedModel}</code>.
                             </p>
                         )}
+                    </div>
+                )}
+
+                {about && (
+                    <div className="settings-dialog-group settings-dialog-about">
+                        <span className="settings-dialog-label">About</span>
+                        <p className="settings-dialog-version">Smart CV {about.version}</p>
+                        <p className="settings-dialog-hint">
+                            Your profiles, templates and exports are stored in
+                            {' '}<code className="settings-dialog-code settings-dialog-folder">{about.dataFolder}</code>.
+                            Copy this folder to back them up.
+                        </p>
                     </div>
                 )}
             </div>

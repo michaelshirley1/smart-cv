@@ -10,6 +10,32 @@ public class ExportRequest
     public List<int>? SectionIds { get; set; }
 
     public List<int>? LineIds { get; set; }
+
+    [MaxLength(1000)]
+    public string? Folder { get; set; }
+
+    [MaxLength(200)]
+    public string? FileName { get; set; }
+
+    public bool Overwrite { get; set; }
+}
+
+public class ExportLocation
+{
+    public string Folder { get; set; } = string.Empty;
+    public string FileName { get; set; } = string.Empty;
+    public bool CanBrowse { get; set; }
+}
+
+public class BrowseRequest
+{
+    [MaxLength(1000)]
+    public string? Folder { get; set; }
+}
+
+public class BrowseResult
+{
+    public string? Folder { get; set; }
 }
 
 public class PrintJob
@@ -24,6 +50,7 @@ public class ExportResult
 {
     public bool Saved { get; set; }
     public string? Path { get; set; }
+    public bool Exists { get; set; }
 }
 
 public class PageSetup

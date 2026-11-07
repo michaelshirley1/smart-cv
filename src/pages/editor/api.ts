@@ -1,5 +1,6 @@
 import client from '../../api/client';
 import {
+    AppInfo,
     AppSettings,
     CreateEntryRequest,
     CreateLineRequest,
@@ -7,6 +8,7 @@ import {
     CreateTagRequest,
     Entry,
     EntryRequest,
+    ExportLocation,
     ExportRequest,
     ExportResult,
     Line,
@@ -131,6 +133,12 @@ export const tailor = (profileId: number, request: TailorRequest) =>
 export const saveTailorTags = (id: number, tagIds: number[]) =>
     client.put(`/profile/${id}/tailor-tags`, { tagIds });
 
+export const getExportLocation = (profileId: number) =>
+    client.get<ExportLocation>('/export/location', { params: { profileId } }).then(r => r.data);
+
+export const browseFolder = (folder: string) =>
+    client.post<{ folder: string | null }>('/export/browse', { folder }).then(r => r.data);
+
 export const exportPdf = (request: ExportRequest) =>
     client.post<ExportResult>('/export/pdf', request).then(r => r.data);
 
@@ -139,6 +147,9 @@ export const getSettings = () =>
 
 export const updateSettings = (settings: AppSettings) =>
     client.put<AppSettings>('/settings', settings).then(r => r.data);
+
+export const getAbout = () =>
+    client.get<AppInfo>('/settings/about').then(r => r.data);
 
 export const getOllamaStatus = (url?: string) =>
     client.get<OllamaStatus>('/settings/ollama', { params: url ? { url } : undefined }).then(r => r.data);

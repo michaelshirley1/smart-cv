@@ -65,4 +65,21 @@ public class SettingsController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpGet("settings/about", Name = "Settings-FetchAbout")]
+    [ProducesResponseType(typeof(AppInfo), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> FetchAbout()
+    {
+        try
+        {
+            var fetchAbout = await _settingsFactory.GetAbout();
+
+            return Ok(fetchAbout);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }

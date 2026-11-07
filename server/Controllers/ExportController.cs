@@ -15,6 +15,41 @@ public class ExportController : ControllerBase
         _exportFactory = exportFactory;
     }
 
+    [HttpGet("export/location", Name = "Export-FetchLocation")]
+    [ProducesResponseType(typeof(ExportLocation), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> FetchLocation([FromQuery] int profileId)
+    {
+        try
+        {
+            var fetchLocation = await _exportFactory.GetLocation(profileId);
+
+            return this.ToActionResult(fetchLocation);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost("export/browse", Name = "Export-Browse")]
+    [ProducesResponseType(typeof(BrowseResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Browse([FromBody] BrowseRequest request)
+    {
+        try
+        {
+            var browse = await _exportFactory.Browse(request);
+
+            return this.ToActionResult(browse);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpPost("export/pdf", Name = "Export-Pdf")]
     [ProducesResponseType(typeof(ExportResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -2,6 +2,7 @@
 @use '../../../../styles/mixins' as *;
 
 .section-card {
+    container-type: inline-size;
     border: $border;
     border-radius: $radius;
     background: $colour-background;
@@ -84,6 +85,22 @@
     &-actions {
         display: flex;
         flex-shrink: 0;
+    }
+
+    @container (max-width: #{$card-compact-width}) {
+        &-header {
+            flex-wrap: wrap;
+            row-gap: 0;
+            padding-bottom: $space-1;
+        }
+
+        &-title {
+            flex: 1 0 $card-compact-title-share;
+        }
+
+        &-actions {
+            margin-left: auto;
+        }
     }
 
     &-body {

@@ -22,11 +22,13 @@ const CvCanvas: React.FC<CvCanvasProps> = () => {
     const ready = profile !== null && loadedHref !== null;
     const stylesheets = [...new Set([loadedHref, href])].filter((value): value is string => value !== null);
     const targetPages = profile?.targetPages ?? 1;
+    const isSample = profile !== null && profile.sections.length === 0;
+    const showTailored = isTailored && !isSample;
 
-    const fitKey = isTailored && result ? JSON.stringify([result, targetPages, href]) : '';
-    const trimmedIds = isTailored && fit.key === fitKey ? fit.trimmedIds : [];
+    const fitKey = showTailored && result ? JSON.stringify([result, targetPages, href]) : '';
+    const trimmedIds = showTailored && fit.key === fitKey ? fit.trimmedIds : [];
 
-    const selection: CvSelection | undefined = isTailored && result ? {
+    const selection: CvSelection | undefined = showTailored && result ? {
         sectionIds: new Set(result.sections.filter(section => section.included).map(section => section.sectionId)),
         lineIds: new Set(result.lines.filter(line => line.included && !trimmedIds.includes(line.lineId)).map(line => line.lineId)),
     } : undefined;
@@ -37,7 +39,7 @@ const CvCanvas: React.FC<CvCanvasProps> = () => {
         if (!ready || !page || !reference || reference.offsetWidth === 0) return;
 
         const pageHeight = page.offsetWidth * (reference.offsetHeight / reference.offsetWidth);
-        if (isTailored && result && fit.key !== fitKey) {
+        if (showTailored && result && fit.key !== fitKey) {
             const overflow = targetPages === 0 ? 0 : page.offsetHeight - pageHeight * targetPages;
             const { trimmed, fits } = linesToTrim(page, result.trimOrder, overflow);
             setFit({ key: fitKey, trimmedIds: trimmed, fits });
@@ -54,13 +56,15 @@ const CvCanvas: React.FC<CvCanvasProps> = () => {
     } : undefined;
 
     const target = targetPages === 0 ? 'no page limit' : `target ${targetPages} page${targetPages === 1 ? '' : 's'}`;
-    const status = !isTailored
-        ? `All lines · ${pageLabel(pages)} · ${target}`
-        : !fit.fits
-            ? `Tailored · ${pageLabel(pages)} · still over the ${target} with every optional line trimmed`
-            : trimmedIds.length > 0
-                ? `Tailored · ${pageLabel(pages)} · ${trimmedIds.length} line${trimmedIds.length === 1 ? '' : 's'} trimmed to fit`
-                : `Tailored · ${pageLabel(pages)} · ${target}`;
+    const status = isSample
+        ? 'Sample CV · add a section or import a CV to start'
+        : !isTailored
+            ? `All lines · ${pageLabel(pages)} · ${target}`
+            : !fit.fits
+                ? `Tailored · ${pageLabel(pages)} · still over the ${target} with every optional line trimmed`
+                : trimmedIds.length > 0
+                    ? `Tailored · ${pageLabel(pages)} · ${trimmedIds.length} line${trimmedIds.length === 1 ? '' : 's'} trimmed to fit`
+                    : `Tailored · ${pageLabel(pages)} · ${target}`;
 
     return (
         <div className="cv-canvas" ref={canvas}>
@@ -75,14 +79,14 @@ const CvCanvas: React.FC<CvCanvasProps> = () => {
             ))}
             <div className="cv-wrapper cv-canvas-probe" ref={probe} aria-hidden="true" />
             {profile && ready && (
-                <p className={`cv-canvas-status${isTailored && !fit.fits ? ' cv-canvas-status--over' : ''}`} role="status">{status}</p>
+                <p className={`cv-canvas-status${showTailored && !fit.fits ? ' cv-canvas-status--over' : ''}`} role="status">{status}</p>
             )}
             <div ref={scaler} className={`cv-canvas-scaler cv-canvas-scaler--zoom-${zoom}${ready ? '' : ' cv-canvas-scaler--loading'}`}>
                 {profile && (
                     <CvWrapper
                         profile={profile}
                         variant="editor"
-                        showPlaceholders={!isTailored}
+                        showPlaceholders={!showTailored}
                         selection={selection}
                         edits={edits}
                     />

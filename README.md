@@ -1,5 +1,7 @@
 # Smart CV
 
+<img width="1420" height="889" alt="image" src="https://github.com/user-attachments/assets/37a165da-947b-4e78-a057-6a2bd85835f2" />
+
 A desktop CV editor that tailors your CV to each job.
 
 Keep every line you could put on a CV in one place, tag the lines, then paste a job advert (or pick tags) and
